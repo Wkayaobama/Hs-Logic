@@ -12,6 +12,7 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from app.cache import health_cache
 from app.config import settings
 
 router = APIRouter(prefix="/api/hubspot", tags=["hubspot"])
@@ -295,8 +296,7 @@ def _normalize(s: str) -> str:
     return re.sub(r"\s+", " ", (s or "").strip().lower())
 
 
-@router.get("/crm-health")
-async def get_crm_health():
+async def _compute_crm_health() -> dict:
     """
     Compute CRM health metrics using the same logic as the SQL queries:
 
@@ -463,6 +463,17 @@ async def get_crm_health():
     }
 
 
+@router.get("/crm-health")
+async def get_crm_health(refresh: bool = False):
+    """Serve the cached CRM health scan; ?refresh=true forces a rescan."""
+    return await health_cache.get_or_compute(
+        "crm-health",
+        _compute_crm_health,
+        settings.health_cache_ttl_seconds,
+        refresh=refresh,
+    )
+
+
 # ─── Contact Health ───────────────────────────────────────────────────────────
 
 # Lifecycle stages ranked; anything at index >= 2 is MQL-eligible
@@ -492,8 +503,7 @@ def _contact_display_name(c: dict) -> str:
     return f"{c['firstname']} {c['lastname']}".strip() or "—"
 
 
-@router.get("/contact-health")
-async def get_contact_health():
+async def _compute_contact_health() -> dict:
     """
     Contact quality analysis — mirrors the SQL CTE pattern applied to contacts.
 
@@ -684,6 +694,17 @@ async def get_contact_health():
         "multi_company_ids": [c["id"] for c in multi_company],
         "capped": len(all_contacts) >= CAP,
     }
+
+
+@router.get("/contact-health")
+async def get_contact_health(refresh: bool = False):
+    """Serve the cached contact health scan; ?refresh=true forces a rescan."""
+    return await health_cache.get_or_compute(
+        "contact-health",
+        _compute_contact_health,
+        settings.health_cache_ttl_seconds,
+        refresh=refresh,
+    )
 
 
 # ─── Suppression list export ──────────────────────────────────────────────────
