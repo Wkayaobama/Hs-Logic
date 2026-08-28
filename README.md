@@ -1,5 +1,7 @@
 # Hubspot-Logic-Server
 
+**Team docs:** [Operator runbook](docs/RUNBOOK.md) · [Pattern catalog](docs/PATTERNS.md)
+
 ## What it is
 
 Portal explorer and CRM health analytics for HubSpot portal 9201667. Standalone microservice (FastAPI backend + React/Vite frontend, docker-compose) that centralizes the scattered HubSpot - Worfklow tooling. Private-app token stays server-side; frontend queries the API and receives the portal id from it.
