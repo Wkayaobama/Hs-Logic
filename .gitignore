@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Secrets / local env
+.env
+
+# Editor telemetry
+.specstory/
+.cursorindexingignore
+
+# OS
+.DS_Store
+Thumbs.db

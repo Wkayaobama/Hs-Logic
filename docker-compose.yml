@@ -1,0 +1,37 @@
+services:
+  backend:
+    build: ./backend
+    # Explicit allowlist: a variable NOT listed here never reaches the
+    # container, and pydantic-settings will see it as unset. This exact
+    # omission broke the deployed app's /portal route once.
+    environment:
+      HUBSPOT_TOKEN: ${HUBSPOT_TOKEN:-}
+      HUBSPOT_PORTAL_ID: ${HUBSPOT_PORTAL_ID:-}
+      HEALTH_CACHE_TTL_SECONDS: ${HEALTH_CACHE_TTL_SECONDS:-900}
+    ports:
+      # Host-only debug access to /api/docs; the app itself is served
+      # through the frontend's nginx on :8080.
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      # python:3.12-slim ships no curl/wget — probe with the stdlib.
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5).status==200 else 1)",
+        ]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
