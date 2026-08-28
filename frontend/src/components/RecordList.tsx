@@ -63,6 +63,7 @@ export default function RecordList<T>({
   const loadMore = () => {
     if (!nextAfter || loadingMore) return;
     setLoadingMore(true);
+    setError(null);
     apiGet<ListEnvelope<T>>(`${path}?limit=${limit}&after=${nextAfter}`)
       .then((envelope) => {
         setRows((prev) => [...prev, ...envelope.results]);
@@ -113,7 +114,10 @@ export default function RecordList<T>({
       {(nextAfter || rows.length > 0) && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
           <span className="text-xs text-gray-400">
-            Showing {formatNumber(rows.length)} of {formatNumber(total)}
+            {/* The plain list endpoints never return a real total (search-only
+                field), so only trust it when it exceeds what we already show. */}
+            Showing {formatNumber(rows.length)}
+            {total > rows.length ? ` of ${formatNumber(total)}` : ""}
           </span>
           {nextAfter && (
             <button

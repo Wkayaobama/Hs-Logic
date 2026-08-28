@@ -10,11 +10,13 @@ export interface PortalCounts {
 
 export interface PortalInfo {
   portal_id: number | string | null;
-  hub_domain: string;
+  // These four are emitted via account.get(...) with no fallback on the
+  // backend, so they arrive as null when account-info omits the key.
+  hub_domain: string | null;
   hub_name: string;
-  timezone: string;
-  currency: string;
-  created_at: string;
+  timezone: string | null;
+  currency: string | null;
+  created_at: string | null;
   counts: PortalCounts;
 }
 

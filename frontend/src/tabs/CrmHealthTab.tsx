@@ -107,6 +107,12 @@ export default function CrmHealthTab() {
         </span>
       </Banner>
 
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
+          Refresh failed — showing the previous scan. ({error.detail})
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Orphan companies"
@@ -189,6 +195,12 @@ export default function CrmHealthTab() {
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
             No duplicate clusters found.
           </div>
+        )}
+        {data.duplicate_cluster_count > orderedClusters.length && (
+          <p className="text-xs text-gray-400 mt-2">
+            showing first {formatNumber(orderedClusters.length)} of{" "}
+            {formatNumber(data.duplicate_cluster_count)} clusters
+          </p>
         )}
       </div>
     </div>

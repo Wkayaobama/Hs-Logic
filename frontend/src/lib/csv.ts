@@ -1,6 +1,12 @@
 function escapeCsvField(value: string | number): string {
-  const str = String(value);
-  if (/[",\n]/.test(str)) {
+  let str = String(value);
+  // CRM-sourced text is attacker-controllable (form submissions); a leading
+  // =, +, -, @, tab or CR executes as a formula when opened in Excel (OWASP
+  // CSV injection), so neutralize it with a leading apostrophe.
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+  if (/[",\r\n]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;

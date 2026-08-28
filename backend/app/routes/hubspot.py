@@ -69,11 +69,14 @@ async def get_portal_info():
     # Account info
     account = await hs_get("/account-info/v3/details")
 
-    # Get counts via limit=1 (HubSpot returns `total` in the envelope)
+    # The plain list envelope carries no `total` (it is a search-API-only
+    # field), so ask the search endpoint for it; -1 signals "unavailable"
+    # and renders as an em dash in the frontend.
     async def count(obj: str) -> int:
         try:
-            data = await hs_get(f"/crm/v3/objects/{obj}", {"limit": 1})
-            return data.get("total", 0)
+            data = await hs_post(f"/crm/v3/objects/{obj}/search", {"limit": 1})
+            total = data.get("total")
+            return total if isinstance(total, int) else -1
         except Exception:
             return -1
 

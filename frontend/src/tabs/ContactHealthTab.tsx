@@ -87,15 +87,21 @@ function SuppressionButton({ nqlIds, nqlContacts }: SuppressionButtonProps) {
       })
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 403) {
+          // Export every NQL id (the uncapped list), joining row detail from
+          // the 150-row detail slice where available.
+          const detailById = new Map(nqlContacts.map((c) => [c.id, c]));
           downloadCsv(
             "nql-suppression.csv",
-            nqlContacts.map((c) => ({
-              id: c.id,
-              name: c.name,
-              email: c.email,
-              phone: c.phone,
-              lifecycle: c.lifecycle,
-            }))
+            nqlIds.map((id) => {
+              const c = detailById.get(id);
+              return {
+                id,
+                name: c?.name ?? "",
+                email: c?.email ?? "",
+                phone: c?.phone ?? "",
+                lifecycle: c?.lifecycle ?? "",
+              };
+            })
           );
           setCsvFallback(true);
         } else {
@@ -121,8 +127,21 @@ function SuppressionButton({ nqlIds, nqlContacts }: SuppressionButtonProps) {
       </button>
 
       {result && (
-        <div className="w-full max-w-sm rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-800">
-          Added {formatNumber(result.added)} contacts to &lsquo;{result.list_name}&rsquo;.{" "}
+        <div
+          className={`w-full max-w-sm rounded-lg border px-3 py-2 text-xs ${
+            result.errors > 0
+              ? "bg-amber-50 border-amber-200 text-amber-800"
+              : "bg-green-50 border-green-200 text-green-800"
+          }`}
+        >
+          Added {formatNumber(result.added)} contacts to &lsquo;{result.list_name}&rsquo;.
+          {result.errors > 0 && (
+            <span className="font-semibold">
+              {" "}
+              {formatNumber(result.errors)} failed to add — the list is
+              incomplete.
+            </span>
+          )}{" "}
           <a
             href={result.url}
             target="_blank"
@@ -136,8 +155,9 @@ function SuppressionButton({ nqlIds, nqlContacts }: SuppressionButtonProps) {
 
       {csvFallback && (
         <div className="w-full max-w-sm rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
-          Lists scope missing — downloaded CSV instead ({formatNumber(nqlIds.length)}{" "}
-          IDs; row detail limited to first 150)
+          Lists scope missing — downloaded CSV instead (all{" "}
+          {formatNumber(nqlIds.length)} IDs; name/email detail available for the
+          first 150)
         </div>
       )}
 
@@ -206,6 +226,12 @@ export default function ContactHealthTab() {
             />
           </div>
         ))}
+        {cluster.count > cluster.contacts.length && (
+          <p className="text-xs text-gray-400 pt-1">
+            {formatNumber(cluster.count)} members, showing{" "}
+            {formatNumber(cluster.contacts.length)}
+          </p>
+        )}
       </div>
     ),
   }));
@@ -235,6 +261,12 @@ export default function ContactHealthTab() {
           </button>
         </span>
       </Banner>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
+          Refresh failed — showing the previous scan. ({error.detail})
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -487,6 +519,12 @@ export default function ContactHealthTab() {
             </p>
           )}
         </div>
+        {data.borderline_count > data.borderline_contacts.length && (
+          <div className="px-5 py-3 border-t border-gray-100 text-xs text-gray-400">
+            showing {formatNumber(data.borderline_contacts.length)} of{" "}
+            {formatNumber(data.borderline_count)}
+          </div>
+        )}
       </div>
 
       <div>
@@ -502,6 +540,12 @@ export default function ContactHealthTab() {
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-sm text-gray-500">
             No duplicate clusters found.
           </div>
+        )}
+        {data.duplicate_cluster_count > clusterItems.length && (
+          <p className="text-xs text-gray-400 mt-2">
+            showing first {formatNumber(clusterItems.length)} of{" "}
+            {formatNumber(data.duplicate_cluster_count)} clusters
+          </p>
         )}
       </div>
 
