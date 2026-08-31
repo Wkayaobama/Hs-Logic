@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from app.cache import health_cache
 from app.config import settings
+from app.scoring.criteria import MQL_LIFECYCLES
 
 router = APIRouter(prefix="/api/hubspot", tags=["hubspot"])
 
@@ -43,6 +44,36 @@ async def hs_get(path: str, params: dict | None = None) -> dict:
         detail = resp.json().get("message", resp.text) if resp.content else resp.reason_phrase
         raise HTTPException(status_code=resp.status_code, detail=f"HubSpot error: {detail}")
     return resp.json()
+
+
+async def iter_contact_pages(
+    properties: str,
+    associations: str | None = "companies",
+    cap: int = 10000,
+):
+    """Yield raw /crm/v3/objects/contacts pages (100/page) up to ~cap items.
+
+    Shared by the contact-health scan and the scoring batch scan so both
+    fetch with identical shape and guard. Callers transform each page and
+    drop it, keeping peak memory at one raw page; a caller whose transformed
+    count reaches cap treats the scan as capped (same semantic as the
+    original inline loop).
+    """
+    yielded = 0
+    cursor: str | None = None
+    while yielded < cap:
+        params: dict = {"limit": 100, "properties": properties}
+        if associations:
+            params["associations"] = associations
+        if cursor:
+            params["after"] = cursor
+        data = await hs_get("/crm/v3/objects/contacts", params)
+        page = data.get("results", [])
+        yielded += len(page)
+        yield page
+        cursor = data.get("paging", {}).get("next", {}).get("after")
+        if not cursor:
+            break
 
 
 async def hs_post(path: str, body: dict) -> dict:
@@ -479,14 +510,8 @@ async def get_crm_health(refresh: bool = False):
 
 # ─── Contact Health ───────────────────────────────────────────────────────────
 
-# Lifecycle stages ranked; anything at index >= 2 is MQL-eligible
-_MQL_LIFECYCLES = {
-    "marketingqualifiedlead",
-    "salesqualifiedlead",
-    "opportunity",
-    "customer",
-    "evangelist",
-}
+# MQL-eligible lifecycle stages live in app.scoring.criteria (MQL_LIFECYCLES),
+# the single source shared with the scoring registry.
 
 
 def _contact_missing(c: dict) -> list[str]:
@@ -537,17 +562,11 @@ async def _compute_contact_health() -> dict:
 
     # ── Step 1: page through all contacts ───────────────────────────────
     all_contacts: list[dict] = []
-    cursor: str | None = None
-    while len(all_contacts) < CAP:
-        params: dict = {
-            "limit": 100,
-            "properties": "email,firstname,lastname,phone,lifecyclestage,hs_lead_status,createdate",
-            "associations": "companies",
-        }
-        if cursor:
-            params["after"] = cursor
-        data = await hs_get("/crm/v3/objects/contacts", params)
-        for r in data.get("results", []):
+    async for page in iter_contact_pages(
+        "email,firstname,lastname,phone,lifecyclestage,hs_lead_status,createdate",
+        cap=CAP,
+    ):
+        for r in page:
             p = r.get("properties", {})
             company_results = r.get("associations", {}).get("companies", {}).get("results", [])
             all_contacts.append(
@@ -563,9 +582,6 @@ async def _compute_contact_health() -> dict:
                     "created_at": p.get("createdate") or "",
                 }
             )
-        cursor = data.get("paging", {}).get("next", {}).get("after")
-        if not cursor:
-            break
 
     # ── Step 2: classify each contact ───────────────────────────────────
     nql_contacts: list[dict] = []
@@ -596,7 +612,7 @@ async def _compute_contact_health() -> dict:
 
         # MQL: meets minimum bar or HubSpot already classified it
         is_mql = (has_email and has_name and has_company) or (
-            c["lifecycle"] in _MQL_LIFECYCLES
+            c["lifecycle"] in MQL_LIFECYCLES
         )
 
         row = {

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     hubspot_token: str = ""
     hubspot_portal_id: str = ""
     health_cache_ttl_seconds: int = 900
+    scoring_cache_ttl_seconds: int = 900
 
 
 settings = Settings()

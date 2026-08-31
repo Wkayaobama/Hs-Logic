@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.config import settings
-from app.routes import hubspot
+from app.routes import hubspot, scoring
 
 app = FastAPI(
     title=settings.project_name,
@@ -18,6 +18,7 @@ app = FastAPI(
 # the published 127.0.0.1:8000 port.
 
 app.include_router(hubspot.router)
+app.include_router(scoring.router)
 
 
 @app.get("/api/health")

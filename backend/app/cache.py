@@ -63,3 +63,4 @@ class TTLCache:
 
 
 health_cache = TTLCache()
+scoring_cache = TTLCache()
