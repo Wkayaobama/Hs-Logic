@@ -20,6 +20,7 @@ Portal explorer and CRM health analytics for HubSpot portal 9201667. Standalone 
 | `/api/scoring/criteria` | GET | Echo the static scoring registry (rules, bands, max score) | — |
 | `/api/scoring/contacts` | GET | Score every contact against the static criteria; cached 15 min | `refresh=true` bypasses cache |
 | `/api/scoring/contacts/{id}` | GET | Score one contact (always fresh, single API call) | — |
+| `/api/scoring/probe` | GET | Portal distributions (job titles, countries, sources, domains, URL paths, industries) to configure the fit registries; cached 15 min | `refresh=true` bypasses cache |
 | `/api/health` | GET | Service health check | — |
 | `/api/docs` | GET | Interactive API documentation (OpenAPI/Swagger) | — |
 
@@ -86,17 +87,32 @@ with zero I/O; the API tests fake the HubSpot calls (no token, no network).
 ## Lead Scoring (static criteria)
 
 `backend/app/scoring/criteria.py` is the declarative registry: editing the
-scoring model = editing that one file (rules, points, bands). Rules score
-extracted features, never raw provenance markers — the synthetic IcAlps ids
-(`icalps_contact_id`, `icalps_company_id`) are hard-excluded and pinned by
-test. Read-only for now: scores are computed and displayed (dashboard "Lead
+scoring model = editing that one file (rules, points, bands, gates). The
+model is tiered: CRM identity signals (email, corporate domain, name,
+company, lifecycle, role/country/source fit), corpus signals (duplicate-
+cluster membership, computed across the whole scan), and web-analytics
+signals (sessions, recency, key pages). Fit registries (target roles,
+countries, sources, key pages, industries) ship EMPTY — their rules are
+inactive ("pending probe") until you pick values from `/api/scoring/probe`'s
+observed distributions and fill them in. Gates implement the MQL/NQL
+relevance normalization: an unreachable or anonymous record classifies NQL
+regardless of points; otherwise the threshold (45) splits MQL from
+borderline. The full model sums to 100; `max_score` reflects the currently
+active rules.
+
+**BINDING RULE**: the entire `icalps_*` property namespace is excluded from
+the scoring script — never fetched, extracted, or referenced by any rule.
+Enforced at import time (`validate_registry()` fails the app on a violating
+edit) and pinned by tests.
+
+Read-only for now: scores are computed and displayed (dashboard "Lead
 Scoring" tab + API), never written back to HubSpot — write-back is a later,
 gated phase.
 
 ## Behavior Notes
 
-- Health scans page through up to 10,000 records; `capped` flag in response signals partial results.
-- First scan takes ~30–90s (100+ sequential HubSpot API calls, deliberately not parallelized to respect rate limits).
+- Full-portal scans (health, scoring, probe) page through up to `SCAN_CAP` records (default 30,000 — the portal held ~25.7k contacts when probed); `capped` flag in response signals partial results.
+- First scan takes ~30–90s per 10k records (sequential HubSpot API calls, deliberately not parallelized to respect rate limits) — expect several minutes at this portal's ~26k contacts; nginx's /api proxy_read_timeout is set to 600s accordingly.
 - Results cached in-process for 15 min per endpoint (single uvicorn worker only — scaling workers multiplies scans).
 - Refresh button in UI forces rescan, bypassing cache.
 - Cache keys are independent: refreshing the Lead Scoring tab never re-runs the health scans, and vice versa (`SCORING_CACHE_TTL_SECONDS` tunes the scoring TTL separately).

@@ -9,6 +9,7 @@ services:
       HUBSPOT_PORTAL_ID: ${HUBSPOT_PORTAL_ID:-}
       HEALTH_CACHE_TTL_SECONDS: ${HEALTH_CACHE_TTL_SECONDS:-900}
       SCORING_CACHE_TTL_SECONDS: ${SCORING_CACHE_TTL_SECONDS:-900}
+      SCAN_CAP: ${SCAN_CAP:-30000}
     ports:
       # Host-only debug access to /api/docs; the app itself is served
       # through the frontend's nginx on :8080.
