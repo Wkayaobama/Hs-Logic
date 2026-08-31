@@ -41,8 +41,14 @@ async function extractErrorDetail(res: Response): Promise<string> {
 
 const BASE = "/api/hubspot";
 
+// Paths already starting with /api/ (e.g. /api/scoring/*) are absolute;
+// everything else stays relative to the historical /api/hubspot base.
+function resolve(path: string): string {
+  return path.startsWith("/api/") ? path : `${BASE}${path}`;
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(resolve(path), {
     method: "GET",
     headers: { Accept: "application/json" },
   });
@@ -53,7 +59,7 @@ export async function apiGet<T>(path: string): Promise<T> {
 }
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(resolve(path), {
     method: "POST",
     headers: {
       Accept: "application/json",

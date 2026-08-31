@@ -201,3 +201,47 @@ export interface SuppressionResult {
   errors: number;
   url: string;
 }
+
+export interface ScoreCriterion {
+  id: string;
+  label: string;
+  met: boolean;
+  points: number;
+  max_points: number;
+}
+
+export interface ScoreRow {
+  id: string;
+  score: number;
+  band: string;
+}
+
+export interface ScoredContactRow extends ScoreRow {
+  name: string;
+  email: string;
+  max_score: number;
+  criteria: ScoreCriterion[];
+}
+
+export interface ScoringRule {
+  id: string;
+  label: string;
+  feature: string;
+  kind: string;
+  points: number;
+  value: string[] | number | null;
+}
+
+export interface ContactScoresResponse {
+  object_type: string;
+  scanned: number;
+  capped: boolean;
+  max_score: number;
+  average_score: number;
+  band_counts: Record<string, number>;
+  scores: ScoreRow[];
+  lowest: ScoredContactRow[];
+  highest: ScoredContactRow[];
+  criteria: ScoringRule[];
+  cache?: CacheMeta;
+}

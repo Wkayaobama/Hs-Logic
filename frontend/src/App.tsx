@@ -9,6 +9,7 @@ import {
   IconBuilding,
   IconDeal,
   IconPerson,
+  IconPersonCheck,
   IconShield,
   IconTicket,
   IconWarning,
@@ -20,6 +21,7 @@ import DealsTab from "./tabs/DealsTab";
 import TicketsTab from "./tabs/TicketsTab";
 import CrmHealthTab from "./tabs/CrmHealthTab";
 import ContactHealthTab from "./tabs/ContactHealthTab";
+import ScoringTab from "./tabs/ScoringTab";
 
 const TABS: TabDef[] = [
   { id: "overview", label: "Overview" },
@@ -29,6 +31,7 @@ const TABS: TabDef[] = [
   { id: "tickets", label: "Tickets", icon: <IconTicket className="h-4 w-4" /> },
   { id: "crm-health", label: "CRM Health", icon: <IconShield className="h-4 w-4" /> },
   { id: "contact-health", label: "Contact Health", icon: <IconWarning className="h-4 w-4" /> },
+  { id: "scoring", label: "Lead Scoring", icon: <IconPersonCheck className="h-4 w-4" /> },
 ];
 
 function renderTab(tabId: string) {
@@ -47,6 +50,8 @@ function renderTab(tabId: string) {
       return <CrmHealthTab />;
     case "contact-health":
       return <ContactHealthTab />;
+    case "scoring":
+      return <ScoringTab />;
     default:
       return null;
   }
