@@ -46,18 +46,19 @@ async def hs_get(path: str, params: dict | None = None) -> dict:
     return resp.json()
 
 
-async def iter_contact_pages(
+async def iter_object_pages(
+    object_type: str,
     properties: str,
-    associations: str | None = "companies",
+    associations: str | None = None,
     cap: int = 10000,
 ):
-    """Yield raw /crm/v3/objects/contacts pages (100/page) up to ~cap items.
+    """Yield raw /crm/v3/objects/{object_type} pages (100/page) up to ~cap items.
 
-    Shared by the contact-health scan and the scoring batch scan so both
-    fetch with identical shape and guard. Callers transform each page and
-    drop it, keeping peak memory at one raw page; a caller whose transformed
-    count reaches cap treats the scan as capped (same semantic as the
-    original inline loop).
+    The one cursor-paging loop shared by the health scans, the scoring batch
+    scan and the probe. Callers transform each page and drop it, keeping
+    peak memory at one raw page; a caller whose transformed count reaches
+    cap treats the scan as capped (same semantic as the original inline
+    loops).
     """
     yielded = 0
     cursor: str | None = None
@@ -67,13 +68,42 @@ async def iter_contact_pages(
             params["associations"] = associations
         if cursor:
             params["after"] = cursor
-        data = await hs_get("/crm/v3/objects/contacts", params)
+        data = await hs_get(f"/crm/v3/objects/{object_type}", params)
         page = data.get("results", [])
         yielded += len(page)
         yield page
         cursor = data.get("paging", {}).get("next", {}).get("after")
         if not cursor:
             break
+
+
+def iter_contact_pages(
+    properties: str,
+    associations: str | None = "companies",
+    cap: int = 10000,
+):
+    return iter_object_pages("contacts", properties, associations, cap)
+
+
+def iter_company_pages(
+    properties: str,
+    associations: str | None = None,
+    cap: int = 10000,
+):
+    return iter_object_pages("companies", properties, associations, cap)
+
+
+def duplicate_id_sets(pairs) -> set[str]:
+    """From (id, key) pairs, return the ids whose key is shared by 2+ ids.
+
+    The scoring corpus stage feeds it normalized emails and names — the
+    same grouping semantic as the contact-health duplicate clusters.
+    """
+    groups: dict[str, set[str]] = defaultdict(set)
+    for item_id, key in pairs:
+        if key:
+            groups[key].add(item_id)
+    return {item_id for members in groups.values() if len(members) >= 2 for item_id in members}
 
 
 async def hs_post(path: str, body: dict) -> dict:
@@ -348,21 +378,12 @@ async def _compute_crm_health() -> dict:
     Companies are grouped by normalised domain (non-empty) and by normalised
     name.  Any group with ≥ 2 members is a duplicate cluster.
     """
-    CAP = 10000  # guard against very large portals
+    CAP = settings.scan_cap  # guard against very large portals
 
     # ── Step 1: page through ALL companies, inline deal associations ─────
     all_companies: list[dict] = []
-    co_cursor: str | None = None
-    while len(all_companies) < CAP:
-        params: dict = {
-            "limit": 100,
-            "properties": "name,domain",
-            "associations": "deals",
-        }
-        if co_cursor:
-            params["after"] = co_cursor
-        data = await hs_get("/crm/v3/objects/companies", params)
-        for r in data.get("results", []):
+    async for co_page in iter_company_pages("name,domain", associations="deals", cap=CAP):
+        for r in co_page:
             p = r.get("properties", {})
             deal_results = r.get("associations", {}).get("deals", {}).get("results", [])
             all_companies.append(
@@ -373,9 +394,6 @@ async def _compute_crm_health() -> dict:
                     "deal_ids": [a["id"] for a in deal_results],
                 }
             )
-        co_cursor = data.get("paging", {}).get("next", {}).get("after")
-        if not co_cursor:
-            break
 
     # ── Step 2: search deals that have `final_customer` set ─────────────
     fc_deals: list[dict] = []
@@ -558,7 +576,7 @@ async def _compute_contact_health() -> dict:
     · Contacts linked to 2+ companies (violates single-company cardinality)
       →  reported separately as multi-company contacts
     """
-    CAP = 10000
+    CAP = settings.scan_cap
 
     # ── Step 1: page through all contacts ───────────────────────────────
     all_contacts: list[dict] = []

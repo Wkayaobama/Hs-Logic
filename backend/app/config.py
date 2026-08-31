@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     hubspot_portal_id: str = ""
     health_cache_ttl_seconds: int = 900
     scoring_cache_ttl_seconds: int = 900
+    # Page-through guard for full-portal scans (health, scoring, probe).
+    # Portal 9201667 holds ~25.7k contacts (probed 2026-08-31), so the old
+    # 10k constant silently truncated every scan.
+    scan_cap: int = 30000
 
 
 settings = Settings()
