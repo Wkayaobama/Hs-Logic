@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { usePortal } from "../PortalContext";
 import { useApi } from "../hooks/useApi";
+import { apiGet, ApiError } from "../api/client";
 import Spinner from "../components/Spinner";
 import ErrorState from "../components/ErrorState";
 import Banner from "../components/Banner";
@@ -15,7 +17,12 @@ import {
 } from "../components/icons";
 import { recordUrl } from "../lib/hubspotLinks";
 import { formatNumber, timeAgo } from "../lib/format";
-import type { ContactScoresResponse, ScoredContactRow } from "../api/types";
+import type {
+  ContactScoresResponse,
+  ProbeEntry,
+  ProbeResponse,
+  ScoredContactRow,
+} from "../api/types";
 
 const BAND_TONES: Record<string, BadgeTone> = {
   hot: "green",
@@ -23,8 +30,20 @@ const BAND_TONES: Record<string, BadgeTone> = {
   cold: "gray",
 };
 
+const CLASS_TONES: Record<string, BadgeTone> = {
+  mql: "green",
+  borderline: "amber",
+  nql: "red",
+};
+
 function BandBadge({ band }: { band: string }) {
   return <Badge tone={BAND_TONES[band] ?? "gray"}>{band}</Badge>;
+}
+
+function ClassBadge({ classification }: { classification: string }) {
+  return (
+    <Badge tone={CLASS_TONES[classification] ?? "gray"}>{classification}</Badge>
+  );
 }
 
 function UnmetChips({ row }: { row: ScoredContactRow }) {
@@ -71,6 +90,7 @@ function ScoreTable({ title, subtitle, rows, maxScore, portalId }: ScoreTablePro
               <th className="text-left font-medium px-5 py-3">Email</th>
               <th className="text-left font-medium px-5 py-3">Score</th>
               <th className="text-left font-medium px-5 py-3">Band</th>
+              <th className="text-left font-medium px-5 py-3">Class</th>
               <th className="text-left font-medium px-5 py-3">Unmet criteria</th>
               <th className="text-right font-medium px-5 py-3"></th>
             </tr>
@@ -88,6 +108,9 @@ function ScoreTable({ title, subtitle, rows, maxScore, portalId }: ScoreTablePro
                 </td>
                 <td className="px-5 py-3">
                   <BandBadge band={row.band} />
+                </td>
+                <td className="px-5 py-3">
+                  <ClassBadge classification={row.classification} />
                 </td>
                 <td className="px-5 py-3">
                   <UnmetChips row={row} />
@@ -112,6 +135,104 @@ function ScoreTable({ title, subtitle, rows, maxScore, portalId }: ScoreTablePro
   );
 }
 
+function ProbeList({ title, entries }: { title: string; entries: ProbeEntry[] }) {
+  return (
+    <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+      <h3 className="text-xs font-semibold text-gray-700 mb-2">{title}</h3>
+      {entries.length === 0 ? (
+        <p className="text-xs text-gray-400">no values observed</p>
+      ) : (
+        <ul className="space-y-1">
+          {entries.slice(0, 10).map((e) => (
+            <li key={e.value} className="flex justify-between gap-2 text-xs">
+              <span className="text-gray-700 truncate" title={e.value}>
+                {e.value}
+              </span>
+              <span className="text-gray-400 tabular-nums">
+                {formatNumber(e.count)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ProbeCard() {
+  const [probe, setProbe] = useState<ProbeResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const run = (refresh: boolean) => {
+    setLoading(true);
+    setError(null);
+    apiGet<ProbeResponse>(`/api/scoring/probe${refresh ? "?refresh=true" : ""}`)
+      .then((res) => {
+        setProbe(res);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof ApiError ? err.detail : String(err));
+        setLoading(false);
+      });
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-1">
+        <h2 className="text-sm font-semibold text-gray-900">
+          Fit-registry probe
+        </h2>
+        <button
+          type="button"
+          onClick={() => run(probe !== null)}
+          disabled={loading}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+        >
+          <IconRefresh className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          {probe ? "Re-run probe" : "Run probe"}
+        </button>
+      </div>
+      <p className="text-xs text-gray-500 mb-4">
+        Scans the portal's observed job titles, countries, sources, email
+        domains, URL paths and industries — pick the target lists from these,
+        then configure them in backend/app/scoring/criteria.py
+      </p>
+
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700 mb-3">
+          {error}
+        </div>
+      )}
+      {loading && !probe && <Spinner message="Probing — full portal scan…" />}
+
+      {probe && (
+        <>
+          <p className="text-xs text-gray-400 mb-3">
+            {formatNumber(probe.scanned_contacts)} contacts /{" "}
+            {formatNumber(probe.scanned_companies)} companies scanned · email
+            domains: {formatNumber(probe.email_domain_split.corporate)} corporate,{" "}
+            {formatNumber(probe.email_domain_split.freemail)} freemail,{" "}
+            {formatNumber(probe.email_domain_split.unknown)} unknown
+            {(probe.contacts_capped || probe.companies_capped) && (
+              <span className="font-semibold text-amber-700"> · cap reached</span>
+            )}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <ProbeList title="Job-title tokens (→ role fit)" entries={probe.top.job_title_tokens} />
+            <ProbeList title="Countries (→ country fit)" entries={probe.top.countries} />
+            <ProbeList title="Traffic sources (→ source quality)" entries={probe.top.sources} />
+            <ProbeList title="URL paths (→ key pages)" entries={probe.top.url_paths} />
+            <ProbeList title="Company industries (→ industry fit)" entries={probe.top.industries} />
+            <ProbeList title="Email domains" entries={probe.top.email_domains} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function ScoringTab() {
   const portal = usePortal();
   const { data, loading, error, reload } = useApi<ContactScoresResponse>(
@@ -131,13 +252,23 @@ export default function ScoringTab() {
   if (!data) return null;
 
   const portalId = portal.portal_id ?? "";
+  const configured = data.criteria.filter((r) => r.configured);
+  const pending = data.criteria.filter((r) => !r.configured);
 
   return (
     <div className="space-y-6">
       <Banner icon={<IconShield className="h-5 w-5" />}>
         <span>
-          Scored <strong>{formatNumber(data.scanned)}</strong> contacts against{" "}
-          <strong>{data.criteria.length}</strong> static criteria
+          Scored <strong>{formatNumber(data.scanned)}</strong> contacts —{" "}
+          {formatNumber(configured.length)} active criteria worth{" "}
+          <strong>{data.max_score}</strong> points
+          {pending.length > 0 && (
+            <span className="text-gray-500">
+              {" "}
+              ({data.full_model_score} once {formatNumber(pending.length)} pending
+              registries are configured)
+            </span>
+          )}
           {data.capped && (
             <span className="font-semibold text-amber-700">
               {" "}
@@ -173,21 +304,21 @@ export default function ScoringTab() {
           icon={<IconShield className="h-5 w-5" />}
         />
         <StatCard
-          label="Hot"
-          value={formatNumber(data.band_counts.hot ?? 0)}
+          label={`MQL (score ≥ ${data.mql_threshold})`}
+          value={formatNumber(data.classification_counts.mql ?? 0)}
           tone="green"
           icon={<IconPersonCheck className="h-5 w-5" />}
         />
         <StatCard
-          label="Warm"
-          value={formatNumber(data.band_counts.warm ?? 0)}
+          label="Borderline"
+          value={formatNumber(data.classification_counts.borderline ?? 0)}
           tone="amber"
           icon={<IconWarning className="h-5 w-5" />}
         />
         <StatCard
-          label="Cold"
-          value={formatNumber(data.band_counts.cold ?? 0)}
-          tone="neutral"
+          label="NQL (gated out)"
+          value={formatNumber(data.classification_counts.nql ?? 0)}
+          tone="red"
           icon={<IconPersonX className="h-5 w-5" />}
         />
       </div>
@@ -198,20 +329,39 @@ export default function ScoringTab() {
         </h2>
         <p className="text-xs text-gray-500 mb-4">
           Static, declarative rules — edit backend/app/scoring/criteria.py to
-          change the model
+          change the model. Bands:{" "}
+          {data.bands
+            .map((b, i) =>
+              i < data.bands.length - 1 ? `${b.label} ≥ ${b.min_points}` : b.label
+            )
+            .join(" · ")}
+          . Gated (NQL): {data.gates.map((g) => g.label.toLowerCase()).join("; ")} —
+          whatever the points.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {data.criteria.map((rule) => (
             <div
               key={rule.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm"
+              className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm ${
+                rule.configured
+                  ? "border-gray-100 bg-gray-50"
+                  : "border-dashed border-gray-200 bg-white"
+              }`}
             >
-              <span className="text-gray-700">{rule.label}</span>
-              <Badge tone="blue">+{rule.points}</Badge>
+              <span className={rule.configured ? "text-gray-700" : "text-gray-400"}>
+                {rule.label}
+              </span>
+              {rule.configured ? (
+                <Badge tone="blue">+{rule.points}</Badge>
+              ) : (
+                <Badge tone="gray">pending probe · +{rule.points}</Badge>
+              )}
             </div>
           ))}
         </div>
       </div>
+
+      <ProbeCard />
 
       <ScoreTable
         title="Lowest scores"

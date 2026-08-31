@@ -214,6 +214,7 @@ export interface ScoreRow {
   id: string;
   score: number;
   band: string;
+  classification: string;
 }
 
 export interface ScoredContactRow extends ScoreRow {
@@ -230,6 +231,18 @@ export interface ScoringRule {
   kind: string;
   points: number;
   value: string[] | number | null;
+  configured: boolean;
+}
+
+export interface ScoringBand {
+  label: string;
+  min_points: number;
+}
+
+export interface ScoringGate {
+  id: string;
+  label: string;
+  empty_features: string[];
 }
 
 export interface ContactScoresResponse {
@@ -237,11 +250,40 @@ export interface ContactScoresResponse {
   scanned: number;
   capped: boolean;
   max_score: number;
+  full_model_score: number;
+  mql_threshold: number;
   average_score: number;
   band_counts: Record<string, number>;
+  classification_counts: Record<string, number>;
+  duplicate_count: number;
   scores: ScoreRow[];
   lowest: ScoredContactRow[];
   highest: ScoredContactRow[];
   criteria: ScoringRule[];
+  bands: ScoringBand[];
+  gates: ScoringGate[];
+  cache?: CacheMeta;
+}
+
+export interface ProbeEntry {
+  value: string;
+  count: number;
+}
+
+export interface ProbeResponse {
+  scanned_contacts: number;
+  contacts_capped: boolean;
+  scanned_companies: number;
+  companies_capped: boolean;
+  email_domain_split: { freemail: number; corporate: number; unknown: number };
+  top: {
+    job_titles: ProbeEntry[];
+    job_title_tokens: ProbeEntry[];
+    countries: ProbeEntry[];
+    sources: ProbeEntry[];
+    email_domains: ProbeEntry[];
+    url_paths: ProbeEntry[];
+    industries: ProbeEntry[];
+  };
   cache?: CacheMeta;
 }
