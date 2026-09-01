@@ -54,6 +54,8 @@ docker compose up --build
 
 The backend environment block in docker-compose.yml is an explicit allowlist — new env vars must be added there or the container never sees them.
 
+**Windows note — `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`**: the named pipe only exists while Docker Desktop's Linux engine is running, so this error means the daemon is down or the CLI is pointed elsewhere — not a problem in this compose file. In order: (1) start Docker Desktop and wait for "Engine running", then `docker version` must show a Server section; (2) if it persists: make sure you're in Linux-containers mode (tray menu), `docker context use desktop-linux`, and clear any stale `$env:DOCKER_HOST`; (3) WSL2 backend wedged → `wsl --shutdown`, restart Docker Desktop (Settings → General → "Use the WSL 2 based engine"; enable your distro under Resources → WSL integration if composing from inside WSL). While Docker is down, the Local Dev path below runs the identical stack.
+
 ## Local Dev (no Docker)
 
 **Terminal 1 (Backend)**:
