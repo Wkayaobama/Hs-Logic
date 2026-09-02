@@ -1,0 +1,62 @@
+{
+ "nodes": [
+  {
+   "id": "hdr0000000000001",
+   "type": "text",
+   "x": -740,
+   "y": -1120,
+   "width": 1480,
+   "height": 220,
+   "color": "6",
+   "text": "# IcAlps HubSpot Platform — System Maps\nPortal **9201667** · sources: `ARCHITECTURE.md` · `doubleassociation.md` · `SALVAGE.md` · audit CSVs · live code of both repos.\nRead left → right: the DevOps mental model, the engine + operator loop, then the scan scenario against its orthogonal schema. Cards are live Mermaid — zoom freely, edit inline."
+  },
+  {
+   "id": "map1000000000001",
+   "type": "text",
+   "x": -2140,
+   "y": -800,
+   "width": 1360,
+   "height": 1500,
+   "color": "4",
+   "text": "## Map 1 — The DevOps exchange (mindmap)\n\n```mermaid\nmindmap\n  root((IcAlps Platform<br/>the DevOps exchange))\n    [Hs-Logic — scaffolded FastAPI + React + Docker]\n      [uvicorn :8000 behind nginx :8080 · vite /api proxy in dev]\n      [compose env ALLOWLIST → pydantic Settings<br/>HUBSPOT_TOKEN · SCAN_CAP · TTLs]\n      [read-only HubSpot token — cannot mutate CRM]\n      [22 automated tests · ships by git push, no portal gates]\n      [Windows gotchas recorded: npipe daemon, .env BOM]\n    [HB-Workflow — CRM card app]\n      [5 cards · 4 serverless writers · registry-driven forms]\n      [gates: upload → auto-deploy → INSTALL / reauthorize on scope change]\n      [no hot reload · validate never executes functions]\n      [zero automated tests — manual 6-step smoke on live prod]\n      [forced defaults: pipeline 766126206 · EUR · matrix-or-Identified]\n    [Scoring model — forthcoming write-back]\n      [13 declarative rules · 80 pts active → 100 configured]\n      [gates force NQL · threshold 45 splits MQL / borderline]\n      [operator probe → fill fit registries → rules self-activate]\n      [Phase 2 GATED: hsl_ properties + diff-only sync<br/>prerequisite: grant write scopes to Hs-Logic token]\n    [History → a better-configured DevOps model]\n      [Builds 11→24 · salvage loop · audit CSVs as constraints]\n      [adversarial review gates — recorded in git history]\n      [drift found: missing card hsmeta · stale docs · owner picker]\n      [target state: one platform · scoped tokens · tested writers · push-sync]\n```\n"
+  },
+  {
+   "id": "map2000000000002",
+   "type": "text",
+   "x": -660,
+   "y": -800,
+   "width": 1360,
+   "height": 1500,
+   "color": "5",
+   "text": "## Map 2 — Engine deep dive + operator loop\n\n```mermaid\nflowchart LR\n  subgraph CRM[\"HubSpot CRM UI\"]\n    REC[\"Record page<br/>Contact 0-1 · Company 0-2 · Deal\"]\n    CARDS[\"IcAlps cards — overlay panels<br/>Edit Deal · 4 Create forms\"]\n    REC --> CARDS\n  end\n\n  FN[\"4 serverless writers<br/>platform-injected token\"]\n  CARDS -- \"hubspot.serverless<br/>properties · associateTo · associateCompanyDomain?\" --> FN\n\n  API[\"api.hubapi.com<br/>CRM v3 / v4 — portal 9201667\"]\n  FN -- \"POST / PATCH objects + associations\" --> API\n\n  ASSOC[\"ASSOCIATIONS — granularity constraint<br/>labels ride BESIDE unlabeled bases, never instead<br/>directions = independent typeId spaces<br/>USER_DEFINED ids are portal-specific<br/>at most ONE Primary label per record<br/>Champion 247: exactly one contact-origin, at most one company-origin\"]\n  API -.- ASSOC\n\n  subgraph HSL[\"Hs-Logic — the engine deep dive\"]\n    EP[\"/api endpoints<br/>criteria · contacts batch · contacts/id · probe<br/>+ portal explorer · 2 health scans · suppression\"]\n    subgraph ENGINE[\"scoring engine — pure, tested\"]\n      EX[\"extractor<br/>14 native props → 13 features<br/>fallback chains: ip_country · parsed domain · latest source\"]\n      PRED[\"predicates<br/>HAS · IN · NOT_IN · GTE<br/>CONTAINS_ANY url · HAS_ANY_TOKEN title · WITHIN_DAYS\"]\n      ACT[\"active-rule filter<br/>empty registry = rule inert, out of max_score\"]\n      SCORE[\"score + band<br/>hot 75 · warm 45 · cold\"]\n      CLASS[\"gates classify<br/>unreachable / anonymous → NQL<br/>else threshold 45 → MQL / borderline\"]\n      EX --> PRED --> ACT --> SCORE --> CLASS\n    end\n    CORPUS[\"corpus stage — route layer<br/>duplicate clusters by email + name<br/>tri-state is_unique, TTL memo\"]\n    REG[\"criteria.py — single source of truth<br/>rules · points · bands · gates · fit registries<br/>BINDING: icalps_* excluded, import-fails\"]\n    EP --> ENGINE\n    EP --> CORPUS\n    ENGINE --- REG\n  end\n  EP -- \"GET objects paged · scan_cap 30000<br/>Bearer read-only token\" --> API\n\n  subgraph OPS[\"OPERATOR LOOP — programmatic interaction\"]\n    O1[\"1 · run GET /api/scoring/probe<br/>portal distributions: titles · countries · sources · urls · industries\"]\n    O2[\"2 · pick fit lists from observed data\"]\n    O3[\"3 · edit criteria.py registries<br/>rules self-activate · 80 → 100 pts\"]\n    O4[\"4 · curl or dashboard: batch scan + single-contact scores\"]\n    O5[\"5 · fix data via the CARDS, never sidebar<br/>audit cohort: 22 wrong-dealstage deals\"]\n    O1 --> O2 --> O3 --> O4 --> O5\n  end\n  O1 -.-> EP\n  O3 -.-> REG\n  O4 -.-> EP\n  O5 -.-> CARDS\n```\n"
+  },
+  {
+   "id": "map3000000000003",
+   "type": "text",
+   "x": 820,
+   "y": -800,
+   "width": 1360,
+   "height": 1500,
+   "color": "2",
+   "text": "## Map 3 — Scan scenario × property matrix (orthogonal)\n\n```mermaid\nflowchart TB\n  subgraph SCENARIO[\"THE SCAN SCENARIO — one batch pass\"]\n    direction TB\n    S1[\"1 · page contacts 100 at a time<br/>up to scan_cap 30000\"]\n    S2[\"2 · extract features per record<br/>email · name · domain · source · visits · recency\"]\n    S3[\"3 · corpus stage across the FULL scan<br/>duplicate clusters → is_unique\"]\n    S4[\"4 · evaluate ACTIVE rules only<br/>13 declared · 9 active today\"]\n    S5[\"5 · score 0..80 → band<br/>hot 75 · warm 45 · cold\"]\n    S6[\"6 · gates classify<br/>NQL overrides points · MQL at 45\"]\n    S7[\"7 · serve: dashboard + API<br/>cached 15 min, single-flight\"]\n    S8[\"8 · PHASE 2 dashed: diff-only write-back<br/>into hsl_ properties\"]\n    S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 -.-> S8\n  end\n\n  subgraph SCHEMA[\"METADATA SCHEMA — the property matrix, ORTHOGONAL axis\"]\n    direction TB\n    M1[\"NATIVE columns — scoring reads these<br/>14 contact props incl hs_analytics family<br/>company: domain · industry · native counts\"]\n    M2[\"icalps_* columns — card-owned business data<br/>17 deal · 14 contact · 23 company fields<br/>EXCLUDED from scoring by binding rule\"]\n    M3[\"hsl_* columns — PLANNED outputs<br/>score · band · fits · recency · company flags\"]\n    M4[\"RULES MATRIX — 13 rules × feature × predicate × points<br/>sums to 100 · the scoring contract\"]\n    M5[\"STAGE MATRIX — 25 cells<br/>stage × status → dealstage<br/>proven deterministic: 9 pairs, 0 conflicts\"]\n    M6[\"BANDS + GATES + THRESHOLD<br/>classification metadata\"]\n  end\n\n  M1 -. \"columns feed the fetch\" .-> S1\n  M1 -. \"columns feed extraction\" .-> S2\n  M4 -. \"contract drives evaluation\" .-> S4\n  M6 -. \"metadata drives 5 and 6\" .-> S5\n  M3 -. \"columns receive the output\" .-> S8\n  M2 -. \"never crosses into the pipeline\" .-x S4\n  M5 -. \"governs the CARD write path, not the scan\" .-> M2\n\n  NOTE[\"ORTHOGONALITY<br/>the pipeline consumes COLUMNS of the matrix<br/>the schema defines columns independently of any scan<br/>adding a rule = new matrix row · adding a property = new column<br/>neither changes the pipeline shape\"]\n  SCHEMA --- NOTE\n```\n"
+  }
+ ],
+ "edges": [
+  {
+   "id": "e100000000000001",
+   "fromNode": "map1000000000001",
+   "fromSide": "right",
+   "toNode": "map2000000000002",
+   "toSide": "left",
+   "label": "how the platform runs"
+  },
+  {
+   "id": "e200000000000002",
+   "fromNode": "map2000000000002",
+   "fromSide": "right",
+   "toNode": "map3000000000003",
+   "toSide": "left",
+   "label": "what the data means"
+  }
+ ]
+}
