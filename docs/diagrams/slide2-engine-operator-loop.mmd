@@ -1,0 +1,46 @@
+flowchart LR
+  subgraph CRM["HubSpot CRM UI"]
+    REC["Record page<br/>Contact 0-1 · Company 0-2 · Deal"]
+    CARDS["IcAlps cards — overlay panels<br/>Edit Deal · 4 Create forms"]
+    REC --> CARDS
+  end
+
+  FN["4 serverless writers<br/>platform-injected token"]
+  CARDS -- "hubspot.serverless<br/>properties · associateTo · associateCompanyDomain?" --> FN
+
+  API["api.hubapi.com<br/>CRM v3 / v4 — portal 9201667"]
+  FN -- "POST / PATCH objects + associations" --> API
+
+  ASSOC["ASSOCIATIONS — granularity constraint<br/>labels ride BESIDE unlabeled bases, never instead<br/>directions = independent typeId spaces<br/>USER_DEFINED ids are portal-specific<br/>at most ONE Primary label per record<br/>Champion 247: exactly one contact-origin, at most one company-origin"]
+  API --- ASSOC
+
+  subgraph HSL["Hs-Logic — the engine deep dive"]
+    EP["/api endpoints<br/>criteria · contacts batch · contacts/id · probe<br/>+ portal explorer · 2 health scans · suppression"]
+    subgraph ENGINE["scoring engine — pure, tested"]
+      EX["extractor<br/>14 native props → 13 features<br/>fallback chains: ip_country · parsed domain · latest source"]
+      PRED["predicates<br/>HAS · IN · NOT_IN · GTE<br/>CONTAINS_ANY url · HAS_ANY_TOKEN title · WITHIN_DAYS"]
+      ACT["active-rule filter<br/>empty registry = rule inert, out of max_score"]
+      SCORE["score + band<br/>hot 75 · warm 45 · cold"]
+      CLASS["gates classify<br/>unreachable / anonymous → NQL<br/>else threshold 45 → MQL / borderline"]
+      EX --> PRED --> ACT --> SCORE --> CLASS
+    end
+    CORPUS["corpus stage — route layer<br/>duplicate clusters by email + name<br/>tri-state is_unique, TTL memo"]
+    REG["criteria.py — single source of truth<br/>rules · points · bands · gates · fit registries<br/>BINDING: icalps_* excluded, import-fails"]
+    EP --> ENGINE
+    EP --> CORPUS
+    ENGINE --- REG
+  end
+  EP -- "GET objects paged · scan_cap 30000<br/>Bearer read-only token" --> API
+
+  subgraph OPS["OPERATOR LOOP — programmatic interaction"]
+    O1["1 · run GET /api/scoring/probe<br/>portal distributions: titles · countries · sources · urls · industries"]
+    O2["2 · pick fit lists from observed data"]
+    O3["3 · edit criteria.py registries<br/>rules self-activate · 80 → 100 pts"]
+    O4["4 · curl or dashboard: batch scan + single-contact scores"]
+    O5["5 · fix data via the CARDS, never sidebar<br/>audit cohort: 22 wrong-dealstage deals"]
+    O1 --> O2 --> O3 --> O4 --> O5
+  end
+  O1 -.-> EP
+  O3 -.-> REG
+  O4 -.-> EP
+  O5 -.-> CARDS

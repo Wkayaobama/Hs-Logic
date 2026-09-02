@@ -1,0 +1,34 @@
+flowchart TB
+  subgraph SCENARIO["THE SCAN SCENARIO — one batch pass"]
+    direction TB
+    S1["1 · page contacts 100 at a time<br/>up to scan_cap 30000"]
+    S2["2 · extract features per record<br/>email · name · domain · source · visits · recency"]
+    S3["3 · corpus stage across the FULL scan<br/>duplicate clusters → is_unique"]
+    S4["4 · evaluate ACTIVE rules only<br/>13 declared · 9 active today"]
+    S5["5 · score 0..80 → band<br/>hot 75 · warm 45 · cold"]
+    S6["6 · gates classify<br/>NQL overrides points · MQL at 45"]
+    S7["7 · serve: dashboard + API<br/>cached 15 min, single-flight"]
+    S8["8 · PHASE 2 dashed: diff-only write-back<br/>into hsl_ properties"]
+    S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 -.-> S8
+  end
+
+  subgraph SCHEMA["METADATA SCHEMA — the property matrix, ORTHOGONAL axis"]
+    direction TB
+    M1["NATIVE columns — scoring reads these<br/>14 contact props incl hs_analytics family<br/>company: domain · industry · native counts"]
+    M2["icalps_* columns — card-owned business data<br/>17 deal · 14 contact · 23 company fields<br/>EXCLUDED from scoring by binding rule"]
+    M3["hsl_* columns — PLANNED outputs<br/>score · band · fits · recency · company flags"]
+    M4["RULES MATRIX — 13 rules × feature × predicate × points<br/>sums to 100 · the scoring contract"]
+    M5["STAGE MATRIX — 25 cells<br/>stage × status → dealstage<br/>proven deterministic: 9 pairs, 0 conflicts"]
+    M6["BANDS + GATES + THRESHOLD<br/>classification metadata"]
+  end
+
+  M1 -. "columns feed the fetch" .-> S1
+  M1 -. "columns feed extraction" .-> S2
+  M4 -. "contract drives evaluation" .-> S4
+  M6 -. "metadata drives 5 and 6" .-> S5
+  M3 -. "columns receive the output" .-> S8
+  M2 -. "never crosses into the pipeline" .-x S4
+  M5 -. "governs the CARD write path, not the scan" .-> M2
+
+  NOTE["ORTHOGONALITY<br/>the pipeline consumes COLUMNS of the matrix<br/>the schema defines columns independently of any scan<br/>adding a rule = new matrix row · adding a property = new column<br/>neither changes the pipeline shape"]
+  SCHEMA --- NOTE
