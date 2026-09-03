@@ -49,6 +49,11 @@ docker compose up --build
 
 The backend environment block in docker-compose.yml is an explicit allowlist — new env vars must be added there or the container never sees them.
 
+## Deploy to Cloud Run
+
+Single-container image (`Dockerfile` at the repo root: FastAPI serves the built SPA), built by
+Cloud Build and deployed by the Ansible playbooks in `deploy/ansible/`. See `deploy/README.md`.
+
 ## Local Dev (no Docker)
 
 **Terminal 1 (Backend)**:

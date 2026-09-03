@@ -257,10 +257,12 @@ Expected: `8 passed`.
 - [ ] **Step 6: Prove the no-op locally against the real app**
 
 ```powershell
-Set-Location backend; .\.venv\Scripts\python.exe -c "from app.main import app; print([r.path for r in app.routes][-3:])"; Set-Location ..
+Set-Location backend; .\.venv\Scripts\python.exe -c "from app.main import app; print([getattr(r,'path',type(r).__name__) for r in app.routes][-4:])"; Set-Location ..
 ```
 
 Expected: the last routes are API routes and `/api/health` (no `/{full_path:path}` because `backend/static/` does not exist).
+
+> Deviation 2026-09-03: FastAPI 0.141 keeps an `_IncludedRouter` entry in `app.routes` that has no `.path`; the original `r.path` expression raised `AttributeError`. `getattr(..., type(r).__name__)` is the tolerant form.
 
 - [ ] **Step 7: Commit**
 
@@ -769,6 +771,13 @@ wsl -d Ubuntu -- bash -lc "cd /mnt/c/Users/ayaobama/Documents/AnthonySalesOps/Co
 ```
 
 Expected: `ok=…  failed=0` and the summary line `account=anthony.yaobama@gmail.com project=wisekeybq billing=True`.
+
+> Deviation 2026-09-03: the interop path contains a space (`Cloud SDK`), which the `command` module's
+> word-splitting would break. Instead of `-e gcloud_bin=...`, `deploy/wsl/install.sh` installs wrappers
+> `~/.local/bin/gcloud` and `~/.local/bin/bq` (they export `CLOUDSDK_CONFIG` and exec the Windows SDK), so
+> the defaults `gcloud_bin: gcloud` / `bq_bin: bq` work unchanged from WSL. Also: the GRANT task uses the
+> `argv` form (backticks + quotes survive without shell parsing), the SA read-back retries for IAM
+> propagation, and `gcloud builds submit` runs in the global pool (no `--region`), matching the proven recipe.
 
 Also probe `bq` through interop (spec claim C9):
 

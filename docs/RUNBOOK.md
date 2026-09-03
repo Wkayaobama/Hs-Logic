@@ -9,6 +9,7 @@ service against HubSpot portal **9201667**.
 | Thing | Value |
 |---|---|
 | App (prod/compose) | http://localhost:8080 — nginx serves the SPA, proxies `/api/` to the backend |
+| App (Cloud Run, staging) | URL printed by `deploy/ansible/deploy.yml` (also in `deploy/ansible/last_deploy.json`); public, single instance, FastAPI serves the SPA itself |
 | API debug | http://127.0.0.1:8000/api/docs (host-only bind) |
 | Backend | FastAPI, single uvicorn worker, port 8000 |
 | Health probe | `GET /api/health` → `{"status": "ok", ...}` (no HubSpot call) |
@@ -30,6 +31,9 @@ docker compose down
 
 Backend waits on its own healthcheck before nginx starts routing. First build
 needs the Docker daemon running (Docker Desktop on this machine).
+
+**Cloud Run (staging):** see `deploy/README.md`. `ansible-playbook deploy.yml` builds and
+deploys the current commit; `verify.yml` re-runs the post-deploy checks without deploying.
 
 **Local dev (no Docker), two terminals:**
 
@@ -156,6 +160,8 @@ The button on the NQL card posts all `nql_ids` to
 5. Immediate second call returns in <1 s with `cache.cached: true`.
 6. `?refresh=true` recomputes (new `cache.computed_at`).
 7. In the UI: one ↗ deep link per object type opens the right HubSpot record.
+8. Cloud Run only: `ansible-playbook verify.yml` green (health, portal id, SPA, `/api`
+   precedence, secret version, dataset access).
 
 ## 8. Change policy
 
