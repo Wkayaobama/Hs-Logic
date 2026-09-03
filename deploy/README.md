@@ -44,6 +44,9 @@ rule: single-quote the whole SQL, doubled single quotes inside):
 bq query --project_id=wisekeybq --nouse_legacy_sql 'GRANT `roles/bigquery.dataViewer` ON SCHEMA `wisekeybq.HubspotSync` TO "serviceAccount:hs-logic-run@wisekeybq.iam.gserviceaccount.com"'
 ```
 
+Identity model, runner assessment and the portable playbook contract are documented for reuse in
+[`docs/GCLOUD_RUNNERS.md`](../docs/GCLOUD_RUNNERS.md).
+
 ## Runner speed (measured 2026-09-03)
 
 | Runner | One gcloud call | Notes |
