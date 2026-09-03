@@ -192,7 +192,20 @@ adversary would mount and the mitigation that raises them before or during execu
 | C13 | Public exposure is acceptable | 100 % | [ruling] R2 | CRM data reachable by URL holders | blast radius documented; IAP is the Phase 3 hardening path; URL is not published anywhere |
 | C14 | `GRANT … ON SCHEMA` is idempotent | 90 % | [recall] gcp-auth-invariants (used 2026-08-13) | re-run errors | `failed_when` ignores "already exists"; read-back on `bq show` access list |
 
-No refutation survives that blocks coding; C4/C9/C10/C11 are raised during Tasks 2–3 and Gate 2.
+| C15 | The WSL interop runner is fast enough for full playbooks | **refuted** | [probe] 2026-09-03: one gcloud call ≈ 44 s through the wrapper; `foundation.yml` still completed (all resources read back), `deploy.yml` then failed on the dirty-tree guard (CRLF false positives: 48 → 0 with `-c core.autocrlf=true`) | operator abandons the executor | guard made host-independent; runner of record = Cloud Shell (or a WSL-native clone); follow-up: deploy step inside Cloud Build (§5.1) |
+
+No refutation survives that blocks coding; C4/C11 are raised at Gate 2. C15 changed the runner, not the design.
+
+### 7.1 Follow-up decision (proposed, not yet approved): deploy step inside Cloud Build
+
+Move `gcloud run deploy` into `deploy/cloudbuild.yaml` as a second step, with every Cloud Run flag
+passed as a substitution rendered from `group_vars/all.yml` (source of truth unchanged). The client
+then makes three calls per release (sha, `builds submit`, describe) instead of nine, and a later
+GitHub push trigger makes releases zero-touch. Cost: the Cloud Build SA gains `roles/run.admin` on
+the project and `roles/iam.serviceAccountUser` on the runtime SA. A GCE VM runner was evaluated and
+rejected: `ic-load-host` exists but is TERMINATED; an always-on e2-micro buys nothing that Cloud
+Shell or Cloud Build does not already provide, and Phase 2/3 scheduling maps to Cloud Scheduler +
+Cloud Run jobs.
 
 ## 8. Phase 2 design — enrichment layer (to be specified in its own doc)
 

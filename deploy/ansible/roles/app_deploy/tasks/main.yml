@@ -11,7 +11,11 @@
   changed_when: false
 
 - name: Working tree must be clean (override with -e allow_dirty=true)
-  ansible.builtin.command: git status --porcelain
+  # -c core.autocrlf=true: a Windows checkout (CRLF on disk) inspected by a Linux
+  # git without autocrlf reports every checked-out file as modified (48 false
+  # positives measured 2026-09-03). Normalising line endings for this read makes
+  # the guard host-independent.
+  ansible.builtin.command: git -c core.autocrlf=true status --porcelain
   args:
     chdir: "{{ repo_root }}"
   register: git_dirty

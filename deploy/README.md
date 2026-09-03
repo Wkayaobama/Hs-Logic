@@ -44,6 +44,17 @@ rule: single-quote the whole SQL, doubled single quotes inside):
 bq query --project_id=wisekeybq --nouse_legacy_sql 'GRANT `roles/bigquery.dataViewer` ON SCHEMA `wisekeybq.HubspotSync` TO "serviceAccount:hs-logic-run@wisekeybq.iam.gserviceaccount.com"'
 ```
 
+## Runner speed (measured 2026-09-03)
+
+| Runner | One gcloud call | Notes |
+|---|---|---|
+| WSL over `/mnt/c` + interop wrappers | **≈ 44 s** | the Windows SDK's Python files are read across the 9p filesystem; fine for `--tags preflight`, painful for full playbooks |
+| Cloud Shell | ≈ 1–2 s | native SDK, already authenticated; needs the branch pushed |
+| WSL native clone + Linux SDK (`apt install google-cloud-cli`) | ≈ 1–2 s | one-time setup, second gcloud login inside WSL |
+
+Once `foundation.yml` has run, `deploy.yml` and `verify.yml` need **no `.env`** (the secret already
+holds the token), so Cloud Shell only needs the repo.
+
 ## Playbooks
 
 | Playbook | When | Mutates |
