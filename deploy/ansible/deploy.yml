@@ -1,0 +1,11 @@
+---
+# Per-release: build (Cloud Build) → deploy (Cloud Run) → read-back → manifest.
+#   ansible-playbook deploy.yml
+#   ansible-playbook deploy.yml -e force_build=true
+#   ansible-playbook deploy.yml -e allow_dirty=true   # local experiments only
+- name: hs-logic — build and deploy
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - app_deploy
+    - app_verify

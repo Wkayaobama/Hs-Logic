@@ -1,0 +1,100 @@
+---
+- name: Repo root
+  ansible.builtin.set_fact:
+    repo_root: "{{ playbook_dir }}/../.."
+
+- name: Git sha (image tag)
+  ansible.builtin.command: git rev-parse --short=12 HEAD
+  args:
+    chdir: "{{ repo_root }}"
+  register: git_sha
+  changed_when: false
+
+- name: Working tree must be clean (override with -e allow_dirty=true)
+  ansible.builtin.command: git status --porcelain
+  args:
+    chdir: "{{ repo_root }}"
+  register: git_dirty
+  changed_when: false
+  failed_when: git_dirty.stdout | length > 0 and not (allow_dirty | default(false) | bool)
+
+- name: Image tag
+  ansible.builtin.set_fact:
+    image_tag: "{{ git_sha.stdout | trim }}"
+    image_ref: "{{ image_uri }}:{{ git_sha.stdout | trim }}"
+
+- name: Previous revision (for rollback)
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} run services describe {{ service_name }} --region {{ gcp_region }}
+    --project {{ gcp_project }} --format=value(status.latestReadyRevisionName)
+  register: previous_revision
+  changed_when: false
+  failed_when: false
+
+- name: Image already built for this sha?
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} artifacts docker images describe {{ image_ref }} --project {{ gcp_project }} --format=value(image_summary.digest)
+  register: image_probe
+  changed_when: false
+  failed_when: false
+
+- name: Cloud Build (build + push)
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} builds submit --project {{ gcp_project }}
+    --config deploy/cloudbuild.yaml
+    --substitutions _REGION={{ gcp_region }},_REPO={{ artifact_repo }},_SERVICE={{ service_name }},_TAG={{ image_tag }}
+    .
+  args:
+    chdir: "{{ repo_root }}"
+  when: image_probe.rc != 0 or (force_build | default(false) | bool)
+
+- name: Read back the image
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} artifacts docker images describe {{ image_ref }} --project {{ gcp_project }} --format=value(image_summary.digest)
+  register: image_after
+  changed_when: false
+  failed_when: image_after.stdout | trim | length == 0
+
+- name: Deploy to Cloud Run
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} run deploy {{ service_name }}
+    --image {{ image_ref }}
+    --region {{ gcp_region }} --project {{ gcp_project }} --platform managed
+    --service-account {{ runtime_sa }}
+    --port {{ run_port }} --memory {{ run_memory }} --cpu {{ run_cpu }}
+    --max-instances {{ run_max_instances }} --min-instances {{ run_min_instances }}
+    --timeout {{ run_timeout }} --concurrency {{ run_concurrency }}
+    --set-secrets HUBSPOT_TOKEN={{ secret_name }}:latest
+    --set-env-vars HUBSPOT_PORTAL_ID={{ hubspot_portal_id }},HEALTH_CACHE_TTL_SECONDS={{ health_cache_ttl_seconds }}
+    {{ '--allow-unauthenticated' if run_allow_unauthenticated | bool else '--no-allow-unauthenticated' }}
+    --quiet
+
+- name: Read back the service
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} run services describe {{ service_name }} --region {{ gcp_region }}
+    --project {{ gcp_project }} --format=json
+  register: service_json
+  changed_when: false
+
+- name: Parse service
+  ansible.builtin.set_fact:
+    svc: "{{ service_json.stdout | from_json }}"
+
+- name: Assert deployed shape
+  ansible.builtin.assert:
+    that:
+      - svc.spec.template.spec.containers[0].image == image_ref
+      - svc.spec.template.spec.serviceAccountName == runtime_sa
+      - svc.spec.template.metadata.annotations['autoscaling.knative.dev/maxScale'] == run_max_instances
+      - svc.status.url is defined
+    fail_msg: "Service read-back does not match the requested deploy"
+
+- name: Write manifest
+  ansible.builtin.copy:
+    dest: "{{ playbook_dir }}/last_deploy.json"
+    content: "{{ {'service': service_name, 'url': svc.status.url, 'image': image_ref, 'revision': svc.status.latestReadyRevisionName, 'previous_revision': previous_revision.stdout | trim, 'deployed_at': lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ')} | to_nice_json }}"
+    mode: "0644"
+
+- name: Deployed
+  ansible.builtin.debug:
+    msg: "{{ svc.status.url }}  revision={{ svc.status.latestReadyRevisionName }}  previous={{ previous_revision.stdout | trim | default('none', true) }}"

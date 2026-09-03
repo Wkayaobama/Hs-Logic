@@ -1,0 +1,7 @@
+---
+# Gate 2 read-backs only. No mutation. Run any time.
+- name: hs-logic — verify deployment
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - app_verify

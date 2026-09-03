@@ -1,0 +1,67 @@
+---
+- name: Service description
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} run services describe {{ service_name }} --region {{ gcp_region }}
+    --project {{ gcp_project }} --format=json
+  register: service_json
+  changed_when: false
+
+- name: Parse
+  ansible.builtin.set_fact:
+    svc: "{{ service_json.stdout | from_json }}"
+    url: "{{ (service_json.stdout | from_json).status.url }}"
+
+- name: GET /api/health
+  ansible.builtin.uri:
+    url: "{{ url }}/api/health"
+    return_content: true
+  register: health
+  failed_when: health.status != 200 or health.json.status != 'ok'
+
+- name: GET /api/hubspot/portal (proves secret wiring + token validity)
+  ansible.builtin.uri:
+    url: "{{ url }}/api/hubspot/portal"
+    return_content: true
+    timeout: 60
+  register: portal
+  failed_when: portal.status != 200 or (portal.json.portal_id | string) != hubspot_portal_id
+
+- name: GET / (SPA)
+  ansible.builtin.uri:
+    url: "{{ url }}/"
+    return_content: true
+  register: spa
+  failed_when: spa.status != 200 or '<div id="root">' not in spa.content
+
+- name: GET /api/does-not-exist keeps API precedence
+  ansible.builtin.uri:
+    url: "{{ url }}/api/does-not-exist"
+    status_code: 404
+    return_content: true
+  register: notfound
+  failed_when: notfound.json.detail != 'Not Found'
+
+- name: Secret versions
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} secrets versions list {{ secret_name }} --project {{ gcp_project }}
+    --filter=state:ENABLED --format=value(name)
+  register: versions
+  changed_when: false
+  failed_when: versions.stdout_lines | length == 0
+
+- name: Dataset access read-back
+  ansible.builtin.command: >-
+    {{ bq_bin }} show --project_id={{ gcp_project }} --format=json {{ gcp_project }}:{{ item }}
+  loop: "{{ bq_read_datasets }}"
+  register: bq_access
+  changed_when: false
+  failed_when: runtime_sa not in bq_access.stdout
+
+- name: Gate 2 summary (blast radius = these names)
+  ansible.builtin.debug:
+    msg:
+      - "url={{ url }} revision={{ svc.status.latestReadyRevisionName }} image={{ svc.spec.template.spec.containers[0].image }}"
+      - "maxScale={{ svc.spec.template.metadata.annotations['autoscaling.knative.dev/maxScale'] }} sa={{ svc.spec.template.spec.serviceAccountName }}"
+      - "portal_id={{ portal.json.portal_id }} secret_versions={{ versions.stdout_lines | length }}"
+      - "created resources: run/{{ service_name }}, sa/{{ runtime_sa }}, secret/{{ secret_name }}, artifacts/{{ artifact_repo }}, iam: secretAccessor+jobUser(+dataViewer via GRANT), allUsers:run.invoker"
+      - "external dependencies at runtime: api.hubapi.com only — independent of Stacksync state"
