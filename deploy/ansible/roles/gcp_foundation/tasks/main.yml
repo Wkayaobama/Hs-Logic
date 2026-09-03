@@ -1,0 +1,198 @@
+---
+- name: Preflight
+  ansible.builtin.import_tasks: preflight.yml
+  tags: [preflight, always]
+
+# ---- APIs ------------------------------------------------------------------
+- name: Enabled services
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} services list --enabled --project {{ gcp_project }} --format=value(config.name)
+  register: enabled_apis
+  changed_when: false
+  tags: [apis]
+
+- name: Enable missing APIs
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} services enable {{ item }} --project {{ gcp_project }}
+  loop: "{{ required_apis | difference(enabled_apis.stdout_lines) }}"
+  tags: [apis]
+
+- name: Read back enabled services
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} services list --enabled --project {{ gcp_project }} --format=value(config.name)
+  register: enabled_apis_after
+  changed_when: false
+  failed_when: required_apis | difference(enabled_apis_after.stdout_lines) | length > 0
+  tags: [apis]
+
+# ---- Artifact Registry -----------------------------------------------------
+- name: Artifact repo exists?
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} artifacts repositories describe {{ artifact_repo }}
+    --location {{ gcp_region }} --project {{ gcp_project }} --format=value(name)
+  register: repo_probe
+  changed_when: false
+  failed_when: false
+  tags: [registry]
+
+- name: Create Artifact repo
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} artifacts repositories create {{ artifact_repo }}
+    --repository-format=docker --location {{ gcp_region }} --project {{ gcp_project }}
+    --description "hs-logic images (Cloud Run)"
+  when: repo_probe.rc != 0
+  tags: [registry]
+
+- name: Read back Artifact repo
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} artifacts repositories describe {{ artifact_repo }}
+    --location {{ gcp_region }} --project {{ gcp_project }} --format=value(format)
+  register: repo_after
+  changed_when: false
+  failed_when: repo_after.stdout | trim != "DOCKER"
+  tags: [registry]
+
+- name: Cloud Build SA may push to the repo (spec claim C4)
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} artifacts repositories add-iam-policy-binding {{ artifact_repo }}
+    --location {{ gcp_region }} --project {{ gcp_project }}
+    --member serviceAccount:{{ cloudbuild_sa }} --role roles/artifactregistry.writer
+    --format=none
+  register: repo_iam
+  changed_when: "'Updated IAM policy' in repo_iam.stderr"
+  tags: [registry]
+
+# ---- Runtime service account ----------------------------------------------
+- name: Runtime SA exists?
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} iam service-accounts describe {{ runtime_sa }} --project {{ gcp_project }} --format=value(email)
+  register: sa_probe
+  changed_when: false
+  failed_when: false
+  tags: [sa]
+
+- name: Create runtime SA
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} iam service-accounts create {{ runtime_sa_name }}
+    --display-name "hs-logic Cloud Run runtime" --project {{ gcp_project }}
+  when: sa_probe.rc != 0
+  tags: [sa]
+
+- name: Read back runtime SA (IAM propagation can lag a few seconds)
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} iam service-accounts describe {{ runtime_sa }} --project {{ gcp_project }} --format=value(email)
+  register: sa_after
+  changed_when: false
+  retries: 6
+  delay: 5
+  until: sa_after.rc == 0 and (sa_after.stdout | trim) == runtime_sa
+  tags: [sa]
+
+- name: Runtime SA project roles (bigquery.jobUser)
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} projects add-iam-policy-binding {{ gcp_project }}
+    --member serviceAccount:{{ runtime_sa }} --role roles/bigquery.jobUser
+    --condition=None --format=none
+  register: sa_project_iam
+  changed_when: "'Updated IAM policy' in sa_project_iam.stderr"
+  tags: [sa]
+
+# ---- Secret ------------------------------------------------------------------
+- name: Secret exists?
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} secrets describe {{ secret_name }} --project {{ gcp_project }} --format=value(name)
+  register: secret_probe
+  changed_when: false
+  failed_when: false
+  tags: [secret]
+
+- name: Create secret container
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} secrets create {{ secret_name }} --replication-policy=automatic --project {{ gcp_project }}
+  when: secret_probe.rc != 0
+  tags: [secret]
+
+- name: Enabled secret versions
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} secrets versions list {{ secret_name }} --project {{ gcp_project }}
+    --filter=state:ENABLED --format=value(name)
+  register: secret_versions
+  changed_when: false
+  tags: [secret]
+
+- name: Decide whether a new version is needed
+  ansible.builtin.set_fact:
+    need_secret_version: "{{ (secret_versions.stdout_lines | length == 0) or (secret_rotate | bool) }}"
+  tags: [secret]
+
+- name: Read HUBSPOT_TOKEN from the repo .env (never echoed)
+  ansible.builtin.set_fact:
+    hubspot_token: "{{ lookup('ansible.builtin.ini', 'HUBSPOT_TOKEN', type='properties', file=env_file) }}"
+  no_log: true
+  when: need_secret_version | bool
+  tags: [secret]
+
+- name: Refuse an empty token
+  ansible.builtin.fail:
+    msg: "HUBSPOT_TOKEN is empty in {{ env_file }}"
+  when: need_secret_version | bool and (hubspot_token | default('') | length == 0)
+  tags: [secret]
+
+- name: Add secret version from stdin
+  ansible.builtin.command:
+    cmd: "{{ gcloud_bin }} secrets versions add {{ secret_name }} --project {{ gcp_project }} --data-file=-"
+    stdin: "{{ hubspot_token }}"
+    stdin_add_newline: false
+  when: need_secret_version | bool
+  no_log: true
+  tags: [secret]
+
+- name: Read back secret versions
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} secrets versions list {{ secret_name }} --project {{ gcp_project }}
+    --filter=state:ENABLED --format=value(name)
+  register: secret_versions_after
+  changed_when: false
+  failed_when: secret_versions_after.stdout_lines | length == 0
+  tags: [secret]
+
+- name: Runtime SA may read the secret
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} secrets add-iam-policy-binding {{ secret_name }} --project {{ gcp_project }}
+    --member serviceAccount:{{ runtime_sa }} --role roles/secretmanager.secretAccessor --format=none
+  register: secret_iam
+  changed_when: "'Updated IAM policy' in secret_iam.stderr"
+  tags: [secret]
+
+# ---- BigQuery dataset read grant (DCL; dataset IAM CLI is allowlist-gated) --
+- name: Grant dataViewer on datasets to the runtime SA
+  ansible.builtin.command:
+    argv:
+      - "{{ bq_bin }}"
+      - query
+      - "--project_id={{ gcp_project }}"
+      - --nouse_legacy_sql
+      - --format=none
+      - "GRANT `roles/bigquery.dataViewer` ON SCHEMA `{{ gcp_project }}.{{ item }}` TO \"serviceAccount:{{ runtime_sa }}\""
+  loop: "{{ bq_read_datasets }}"
+  register: bq_grant
+  changed_when: false
+  tags: [bq]
+
+- name: Read back dataset access
+  ansible.builtin.command: >-
+    {{ bq_bin }} show --project_id={{ gcp_project }} --format=json {{ gcp_project }}:{{ item }}
+  loop: "{{ bq_read_datasets }}"
+  register: bq_access
+  changed_when: false
+  failed_when: runtime_sa not in bq_access.stdout
+  tags: [bq]
+
+- name: Foundation summary
+  ansible.builtin.debug:
+    msg:
+      - "project={{ gcp_project }} region={{ gcp_region }}"
+      - "repo={{ image_uri }}"
+      - "runtime_sa={{ runtime_sa }}"
+      - "secret={{ secret_name }} versions={{ secret_versions_after.stdout_lines | length }}"
+      - "bq_read={{ bq_read_datasets | join(',') }}"

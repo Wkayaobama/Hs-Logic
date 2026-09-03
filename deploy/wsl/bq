@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# WSL wrapper: run the Windows Cloud SDK's bq against the Windows config.
+# Installed by deploy/wsl/install.sh.
+export CLOUDSDK_CONFIG="${CLOUDSDK_CONFIG:-/mnt/c/Users/ayaobama/AppData/Roaming/gcloud}"
+exec "/mnt/c/Users/ayaobama/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/bq" "$@"

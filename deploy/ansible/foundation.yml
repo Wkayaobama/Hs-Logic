@@ -1,0 +1,10 @@
+---
+# One-time GCP foundation for hs-logic. Idempotent; safe to re-run.
+#   ansible-playbook foundation.yml                   # everything
+#   ansible-playbook foundation.yml --tags preflight  # read-only checks
+#   ansible-playbook foundation.yml -e secret_rotate=true
+- name: hs-logic — GCP foundation
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - gcp_foundation

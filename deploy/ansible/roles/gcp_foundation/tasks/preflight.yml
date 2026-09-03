@@ -1,0 +1,26 @@
+---
+- name: Active gcloud account
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} auth list --filter=status:ACTIVE --format=value(account)
+  register: gcloud_account
+  changed_when: false
+
+- name: Fail when no account is active
+  ansible.builtin.fail:
+    msg: "No active gcloud account. Run: gcloud auth login"
+  when: gcloud_account.stdout | trim | length == 0
+
+- name: Billing state of {{ gcp_project }}
+  ansible.builtin.command: >-
+    {{ gcloud_bin }} billing projects describe {{ gcp_project }} --format=value(billingEnabled)
+  register: billing
+  changed_when: false
+
+- name: Fail when billing is disabled (the wisekeyclourrun trap, 2026-09-03)
+  ansible.builtin.fail:
+    msg: "Billing is disabled on {{ gcp_project }}; Cloud Run/Artifact Registry calls will fail."
+  when: billing.stdout | trim | lower != "true"
+
+- name: Preflight summary
+  ansible.builtin.debug:
+    msg: "account={{ gcloud_account.stdout | trim }} project={{ gcp_project }} billing={{ billing.stdout | trim }}"

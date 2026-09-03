@@ -1,0 +1,46 @@
+# ---- target (the ONLY place the project is chosen) --------------------------
+gcp_project: wisekeybq
+gcp_project_number: "948062441615"
+gcp_region: europe-west1
+
+# ---- binaries ----------------------------------------------------------------
+# On WSL, deploy/wsl/install.sh puts wrappers named gcloud/bq on PATH that call
+# the Windows SDK with CLOUDSDK_CONFIG set, so the defaults work unchanged.
+gcloud_bin: gcloud
+bq_bin: bq
+
+# ---- names -----------------------------------------------------------------
+service_name: hs-logic
+artifact_repo: hs-logic
+image_uri: "{{ gcp_region }}-docker.pkg.dev/{{ gcp_project }}/{{ artifact_repo }}/{{ service_name }}"
+runtime_sa_name: hs-logic-run
+runtime_sa: "{{ runtime_sa_name }}@{{ gcp_project }}.iam.gserviceaccount.com"
+secret_name: hs-logic-hubspot-token
+cloudbuild_sa: "{{ gcp_project_number }}@cloudbuild.gserviceaccount.com"
+
+# ---- app config (mirrors the compose allowlist) ----------------------------
+env_file: "{{ playbook_dir }}/../../.env"
+hubspot_portal_id: "9201667"
+health_cache_ttl_seconds: "900"
+secret_rotate: false            # -e secret_rotate=true adds a new version
+
+# ---- BigQuery read scope for the runtime SA (Phase 2 read path) ------------
+bq_read_datasets:
+  - HubspotSync
+
+# ---- Cloud Run sizing (spec §3.1) ------------------------------------------
+run_port: "8080"
+run_memory: 512Mi
+run_cpu: "1"
+run_max_instances: "1"
+run_min_instances: "0"
+run_timeout: "300"
+run_concurrency: "80"
+run_allow_unauthenticated: true
+
+required_apis:
+  - run.googleapis.com
+  - cloudbuild.googleapis.com
+  - artifactregistry.googleapis.com
+  - secretmanager.googleapis.com
+  - iam.googleapis.com
