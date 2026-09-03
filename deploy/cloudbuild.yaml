@@ -1,0 +1,28 @@
+# Build + push the hs-logic image. Deployment is done by deploy/ansible/deploy.yml
+# so every Cloud Run flag lives in exactly one place (group_vars/all.yml).
+substitutions:
+  _REGION: europe-west1
+  _REPO: hs-logic
+  _SERVICE: hs-logic
+  _TAG: manual
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${_TAG}
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${_TAG}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest
+
+timeout: 1200s
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -19,3 +19,8 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Built SPA copied next to the backend for local single-container checks; the image builds it itself
+backend/static/
+# Ansible deploy manifest (per-machine state)
+deploy/ansible/last_deploy.json
