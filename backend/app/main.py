@@ -1,7 +1,17 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from app.config import settings
-from app.routes import hubspot
+from app.hubspot.client import close_client
+from app.routes import export, hubspot
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    yield
+    await close_client()
+
 
 app = FastAPI(
     title=settings.project_name,
@@ -10,6 +20,7 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    lifespan=lifespan,
 )
 
 # No CORS middleware on purpose: the frontend reaches this API same-origin
@@ -18,6 +29,7 @@ app = FastAPI(
 # the published 127.0.0.1:8000 port.
 
 app.include_router(hubspot.router)
+app.include_router(export.router)
 
 
 @app.get("/api/health")

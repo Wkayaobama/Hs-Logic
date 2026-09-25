@@ -1,0 +1,14 @@
+edge_name,source,target,cardinality,source_type_ids,primary_type_id,min_per_source,max_primary_per_source,max_per_source,expected_rate,orphan_group,workbook_expected,workbook_resolvable,note
+deal_primary_company,deals,companies,1:N,341|5,5,1,1,,0.997,,749,747,Both types required for full bidirectional symmetry
+deal_primary_contact,deals,contacts,1:N,3|247,,1,,,0.825,,738,609,Default 4 + Champion 248 required to surface the Champion in UI
+contact_primary_company,contacts,companies,N:M,279|1|271,1,1,1,,0.939,,4801,4788,Three nested types: 279 default -> 1 Primary -> 272 IcAlps custom
+company_icalps_primary_contact,companies,contacts,1:1,272,272,0,1,1,0.843,,2324,1970,1 IcAlps_PrimaryContact per company (limit=1 on type=271 reverse)
+note_company,notes,companies,N:M,190,,0,,,0.994,engagement,1524,n/a,
+note_contact,notes,contacts,N:M,202,,0,,,0.998,engagement,8822,n/a,
+note_deal,notes,deals,N:M,214,,0,,,0.989,engagement,375,n/a,
+call_company,calls,companies,N:M,182,,0,,,0.995,engagement,6024,n/a,
+call_contact,calls,contacts,N:M,194,,0,,,0.992,engagement,5016,n/a,
+meeting_company,meetings,companies,N:M,188,,0,,,0.0,engagement,474,n/a,
+meeting_contact,meetings,contacts,N:M,200,,0,,,0.0,engagement,411,n/a,
+task_company,tasks,companies,N:M,192,,0,,,0.994,engagement,349,n/a,
+task_contact,tasks,contacts,N:M,204,,0,,,0.983,engagement,349,n/a,

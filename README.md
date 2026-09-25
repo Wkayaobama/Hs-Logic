@@ -19,6 +19,31 @@ Portal explorer and CRM health analytics for HubSpot portal 9201667. Standalone 
 | `/api/hubspot/suppression-list` | POST | Create static HubSpot list from contact ids | `contact_ids` (JSON array) |
 | `/api/health` | GET | Service health check | — |
 | `/api/docs` | GET | Interactive API documentation (OpenAPI/Swagger) | — |
+| `/api/export/{object}` | GET | One page of records for `contacts`, `companies`, `deals`, `tickets`, `notes`, `calls`, `meetings`, `tasks`, optionally scoped to a business entity, with association type ids and labels | `entity`, `after`, `limit`, `properties`, `associations`, `sample`, `with_labels` |
+| `/api/export/{object}/count` | GET | Record count, optionally scoped, with AND-ed filters `prop:OP:value` (repeatable) | `entity`, `filter`, `max_pages` |
+| `/api/export/associations` | GET | v4 batch association read with labels | `from`, `to`, `ids` |
+| `/api/meta/entities` | GET | The business-entity seed (`backend/app/data/entities.yaml`) and export defaults | — |
+| `/api/meta/properties/{object}` | GET | Property definitions (type, fieldType, groupName, hubspotDefined, options) | — |
+
+Every response of the export/meta routes carries `X-Logic-Request-Id`, `X-Logic-Duration-Ms`, `X-Logic-HS-Requests`, `X-Logic-HS-429` and `X-Logic-HS-Retries` headers so the sampling probe can measure the execution layer.
+
+## Business entities
+
+`backend/app/data/entities.yaml` states once how each business entity sharing the portal (WISEKEY, WISESAT, SEALSQ, SEALCOIN, QUANTUM_AI, ICALPS, MIRAEX, WECAN) is recognised on every object: deal pipelines, ticket/contact/company marker properties, or the complement (WISEKEY). `app/entities.py` turns it into HubSpot search `filterGroups` (server-side) or a client-side predicate; objects without a marker are exported as an empty page flagged `no_marker`.
+
+## Sampling probe
+
+`sampling/` is the PowerShell 7 pipeline (stages `00_preflight` .. `08_review_package`, `run.ps1`, gate report) that proves the backend is executable, accurate and efficient before any rule is built on it. See `sampling/README.md`.
+
+## Tests and the fake HubSpot
+
+```bash
+cd backend && python -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
+pytest                                   # backend tests against the in-process fake HubSpot
+python -m tools.fake_hubspot --port 8100 # standalone fake (seeded with the 2026-09-14 reference numbers)
+HUBSPOT_BASE_URL=http://127.0.0.1:8100 HUBSPOT_TOKEN=fake uvicorn app.main:app --port 8000
+```
 
 ## Required Private-App Scopes
 
@@ -29,10 +54,12 @@ Portal explorer and CRM health analytics for HubSpot portal 9201667. Standalone 
 - `account-info.security.read`
 - `crm.lists.read` (optional, for suppression-list read)
 - `crm.lists.write` (optional, for suppression-list create; frontend falls back to CSV on 403)
+- `crm.objects.*.read` also cover the export routes; engagement exports need `crm.objects.notes.read` / `calls` / `meetings` / `tasks` scopes as applicable
 
 ## Configuration
 
 Copy `.env.example` to `.env` at repo root and fill in `HUBSPOT_TOKEN`.
+Optional: `HUBSPOT_BASE_URL` (point at the fake HubSpot), `HUBSPOT_MAX_RETRIES`, `SEARCH_RPS`, `EXPORT_PAGE_LIMIT`, `ENTITIES_PATH` (see `.env.example`).
 
 **IMPORTANT Windows note**: .env must be UTF-8 WITHOUT BOM. PowerShell `>` redirection writes UTF-16 and breaks pydantic-settings. Use `Set-Content -Encoding utf8NoBOM` or a text editor (not PowerShell redirection).
 

@@ -1,0 +1,9 @@
+# Per-run outputs of the sampling probe (kept out of git; the model/ folder is committed)
+state/
+preflight/
+extract/
+flatten/
+validation/
+delta/
+logs/
+review/

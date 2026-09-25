@@ -1,0 +1,119 @@
+# Business entities sharing portal 9201667 and how each one is recognised on
+# every CRM object. Stated once here; the export routes turn it into HubSpot
+# search filterGroups (server-side) or a client-side predicate (complement).
+#
+# Scope modes produced by app/entities.py:
+#   search      pipelines / any_of markers -> filterGroups (OR between groups)
+#   complement  everything not claimed by another entity (WISEKEY, default brand)
+#   no_marker   the entity has no marker on that object yet (itself a probe finding)
+#   unscoped    engagements (notes, calls, meetings, tasks) are attributed via associations
+version: 1
+captured: "2026-09-25"
+portal_id: "9201667"
+entities:
+  - id: WISEKEY
+    name: WISeKey SA (holding)
+    kind: holding
+    brand_id: 0
+    notes: Default brand. Complement of every other entity on contacts, companies and tickets.
+    objects:
+      deals:
+        pipelines: ["40296576"]            # Wisekey Services + PKI
+      contacts: { complement: true }
+      companies: { complement: true }
+      tickets: { complement: true }
+
+  - id: WISESAT
+    name: Wise.Sat
+    kind: product_line
+    parent: WISEKEY
+    brand_id: 2676052                        # the existing add-on brand ("WiseSat")
+    objects:
+      deals:
+        pipelines: ["875072356"]            # Wise.Sat
+      contacts:
+        any_of:
+          - { property: wisekey_department, operator: EQ, value: Wise_Sat }
+          - { property: hs_all_assigned_business_unit_ids, operator: EQ, value: "2676052" }
+      companies:
+        any_of:
+          - { property: hs_all_assigned_business_unit_ids, operator: EQ, value: "2676052" }
+
+  - id: SEALSQ
+    name: SEALSQ
+    kind: subsidiary
+    parent: WISEKEY
+    brand_id: 0
+    teams: ["78924886", "63735821"]         # SEALSQ, SQ SALES
+    objects:
+      deals:
+        pipelines: ["12096408", "13772279"]  # SealSQ Hardware, SealSQ Services
+      contacts:
+        any_of:
+          - { property: sealsq, operator: EQ, value: "true" }
+          - { property: sealsq_enquiry_type, operator: HAS_PROPERTY }
+      companies:
+        any_of:
+          - { property: icalps__sealsq, operator: EQ, value: SEALSQ }
+
+  - id: SEALCOIN
+    name: SEALCOIN
+    kind: product_line
+    parent: SEALSQ
+    brand_id: 0
+    objects:
+      deals:
+        pipelines: ["705868909"]            # SEALCOIN
+      contacts:
+        any_of:
+          - { property: what_interests_you_about_sealcoin, operator: HAS_PROPERTY }
+          - { property: how_did_you_hear_about_sealcoin_token, operator: HAS_PROPERTY }
+
+  - id: QUANTUM_AI
+    name: Quantum & AI
+    kind: product_line
+    parent: SEALSQ
+    brand_id: 0
+    objects:
+      deals:
+        pipelines: ["934982230"]            # Quantum & AI
+
+  - id: ICALPS
+    name: IC'Alps
+    kind: subsidiary
+    parent: SEALSQ
+    brand_id: 0
+    teams: ["63735818"]                     # IC'ALPS (empty today)
+    objects:
+      deals:
+        pipelines: ["766126206"]            # Icalps_hardware
+      tickets:
+        any_of:
+          - { property: is_icalps, operator: EQ, value: "true" }
+      contacts:
+        any_of:
+          - { property: icalps_contact_id, operator: HAS_PROPERTY }
+          - { property: icalps_contactstatus, operator: HAS_PROPERTY }
+      companies:
+        any_of:
+          - { property: icalps_companytype, operator: HAS_PROPERTY }
+          - { property: icalps_companystatus, operator: HAS_PROPERTY }
+
+  - id: MIRAEX
+    name: MIRAEX
+    kind: venture
+    parent: WISEKEY
+    brand_id: 2676052
+    notes: Only contacts carry a marker today (miraex_intent); companies, deals and tickets are no_marker.
+    objects:
+      contacts:
+        any_of:
+          - { property: miraex_intent, operator: HAS_PROPERTY }
+
+  - id: WECAN
+    name: WeCan
+    kind: venture
+    parent: WISEKEY
+    brand_id: 2676052
+    notes: No property, team or pipeline footprint yet; every object is no_marker.
+    objects: {}

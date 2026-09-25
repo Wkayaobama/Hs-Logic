@@ -1,0 +1,1569 @@
+{
+  "captured": "2026-09-14",
+  "scope_filter": {
+    "prop": "pipeline",
+    "op": "IN",
+    "value": "12096408|13772279|766126206|705868909"
+  },
+  "references": [
+    {
+      "id": "deals_total",
+      "group": "fixed",
+      "label": "All deals",
+      "object": "deals",
+      "filters": [],
+      "metric": "count",
+      "expected": 1960,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_total",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_sealsq_scope",
+      "group": "fixed",
+      "label": "Deals in SEALSQ scope (4 pipelines)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        }
+      ],
+      "metric": "count",
+      "expected": 1820,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_in_scope",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_pipeline_12096408",
+      "group": "pipeline",
+      "label": "Deals in pipeline SealSQ Hardware",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "EQ",
+          "value": "12096408"
+        }
+      ],
+      "metric": "count",
+      "expected": 728,
+      "tolerance_abs": 10,
+      "tolerance_pct": 2.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_per_pipeline",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_pipeline_13772279",
+      "group": "pipeline",
+      "label": "Deals in pipeline SealSQ Services",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "EQ",
+          "value": "13772279"
+        }
+      ],
+      "metric": "count",
+      "expected": 303,
+      "tolerance_abs": 10,
+      "tolerance_pct": 2.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_per_pipeline",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_pipeline_766126206",
+      "group": "pipeline",
+      "label": "Deals in pipeline Icalps_hardware",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "EQ",
+          "value": "766126206"
+        }
+      ],
+      "metric": "count",
+      "expected": 788,
+      "tolerance_abs": 10,
+      "tolerance_pct": 2.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_per_pipeline",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_pipeline_705868909",
+      "group": "pipeline",
+      "label": "Deals in pipeline SEALCOIN",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "EQ",
+          "value": "705868909"
+        }
+      ],
+      "metric": "count",
+      "expected": 1,
+      "tolerance_abs": 10,
+      "tolerance_pct": 2.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_per_pipeline",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_pipeline_40296576",
+      "group": "pipeline",
+      "label": "Deals in pipeline Wisekey Services + PKI",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "EQ",
+          "value": "40296576"
+        }
+      ],
+      "metric": "count",
+      "expected": 140,
+      "tolerance_abs": 10,
+      "tolerance_pct": 2.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_per_pipeline",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_pipeline_875072356",
+      "group": "pipeline",
+      "label": "Deals in pipeline Wise.Sat",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "EQ",
+          "value": "875072356"
+        }
+      ],
+      "metric": "count",
+      "expected": 0,
+      "tolerance_abs": 10,
+      "tolerance_pct": 2.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_per_pipeline",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "deals_pipeline_934982230",
+      "group": "pipeline",
+      "label": "Deals in pipeline Quantum & AI",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "EQ",
+          "value": "934982230"
+        }
+      ],
+      "metric": "count",
+      "expected": 0,
+      "tolerance_abs": 10,
+      "tolerance_pct": 2.0,
+      "source": "sealsq_property_set.meta.sealsq_scope.deals_per_pipeline",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_qvault_tpm_iot",
+      "group": "fixed",
+      "label": "prod___product_name_new_ = 'QVault TPM IOT'",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "QVault TPM IOT"
+        }
+      ],
+      "metric": "count",
+      "expected": 32,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.validated_queries[0]",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_qvault_tpm",
+      "group": "fixed",
+      "label": "prod___product_name_new_ = 'QVault TPM'",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "QVault TPM"
+        }
+      ],
+      "metric": "count",
+      "expected": 82,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.validated_queries[0]",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "wisekey_seal_seal",
+      "group": "fixed",
+      "label": "wisekey___seal = Seal (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "wisekey___seal",
+          "op": "EQ",
+          "value": "Seal"
+        }
+      ],
+      "metric": "count",
+      "expected": 1798,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail.wisekey___seal",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "wisekey_seal_wisekey",
+      "group": "fixed",
+      "label": "wisekey___seal = Wisekey (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "wisekey___seal",
+          "op": "EQ",
+          "value": "Wisekey"
+        }
+      ],
+      "metric": "count",
+      "expected": 22,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail.wisekey___seal",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Unassigned",
+      "group": "product",
+      "label": "Product Unassigned",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "NOT_HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 822,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_INES",
+      "group": "product",
+      "label": "Product INES",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "INES"
+        }
+      ],
+      "metric": "count",
+      "expected": 240,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC408",
+      "group": "product",
+      "label": "Product VIC408",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC408"
+        }
+      ],
+      "metric": "count",
+      "expected": 158,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_N/A",
+      "group": "product",
+      "label": "Product N/A",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "N/A"
+        }
+      ],
+      "metric": "count",
+      "expected": 96,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_PKI",
+      "group": "product",
+      "label": "Product PKI",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "PKI"
+        }
+      ],
+      "metric": "count",
+      "expected": 95,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_QVault TPM",
+      "group": "product",
+      "label": "Product QVault TPM",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "QVault TPM"
+        }
+      ],
+      "metric": "count",
+      "expected": 82,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC292",
+      "group": "product",
+      "label": "Product VIC292",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC292"
+        }
+      ],
+      "metric": "count",
+      "expected": 64,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_QS7001",
+      "group": "product",
+      "label": "Product QS7001",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "QS7001"
+        }
+      ],
+      "metric": "count",
+      "expected": 59,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Legacy",
+      "group": "product",
+      "label": "Product Legacy",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Legacy"
+        }
+      ],
+      "metric": "count",
+      "expected": 34,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_QVault TPM IOT",
+      "group": "product",
+      "label": "Product QVault TPM IOT",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "QVault TPM IOT"
+        }
+      ],
+      "metric": "count",
+      "expected": 32,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_MS6003",
+      "group": "product",
+      "label": "Product MS6003",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "MS6003"
+        }
+      ],
+      "metric": "count",
+      "expected": 29,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_SCR200",
+      "group": "product",
+      "label": "Product SCR200",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "SCR200"
+        }
+      ],
+      "metric": "count",
+      "expected": 28,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC405 1.2.5",
+      "group": "product",
+      "label": "Product VIC405 1.2.5",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC405 1.2.5"
+        }
+      ],
+      "metric": "count",
+      "expected": 27,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC155",
+      "group": "product",
+      "label": "Product VIC155",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC155"
+        }
+      ],
+      "metric": "count",
+      "expected": 25,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_PKI/Other",
+      "group": "product",
+      "label": "Product PKI/Other",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "PKI/Other"
+        }
+      ],
+      "metric": "count",
+      "expected": 21,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_ASIC (Undefined)",
+      "group": "product",
+      "label": "Product ASIC (Undefined)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Undefined"
+        }
+      ],
+      "metric": "count",
+      "expected": 21,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Wise.Sat",
+      "group": "product",
+      "label": "Product Wise.Sat",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Wise.Sat"
+        }
+      ],
+      "metric": "count",
+      "expected": 18,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC409 (QVault 409)",
+      "group": "product",
+      "label": "Product VIC409 (QVault 409)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "QVault 409"
+        }
+      ],
+      "metric": "count",
+      "expected": 16,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_PKI/GSMA",
+      "group": "product",
+      "label": "Product PKI/GSMA",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "PKI/GSMA"
+        }
+      ],
+      "metric": "count",
+      "expected": 15,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_MS6001",
+      "group": "product",
+      "label": "Product MS6001",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "MS6001"
+        }
+      ],
+      "metric": "count",
+      "expected": 14,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC183",
+      "group": "product",
+      "label": "Product VIC183",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC183"
+        }
+      ],
+      "metric": "count",
+      "expected": 13,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_SCR075",
+      "group": "product",
+      "label": "Product SCR075",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "SCR075"
+        }
+      ],
+      "metric": "count",
+      "expected": 10,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC420",
+      "group": "product",
+      "label": "Product VIC420",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC420"
+        }
+      ],
+      "metric": "count",
+      "expected": 9,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_NRE",
+      "group": "product",
+      "label": "Product NRE",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "NRE"
+        }
+      ],
+      "metric": "count",
+      "expected": 6,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC405 1.2.6 (CUSTOM - BK Tech)",
+      "group": "product",
+      "label": "Product VIC405 1.2.6 (CUSTOM - BK Tech)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC405 1.2.6 (CUSTOM - BK Tech)"
+        }
+      ],
+      "metric": "count",
+      "expected": 5,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Act2L v1.5 (CISCO)",
+      "group": "product",
+      "label": "Product Act2L v1.5 (CISCO)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Act2L v1.5 (CISCO)"
+        }
+      ],
+      "metric": "count",
+      "expected": 4,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_SEALBOX",
+      "group": "product",
+      "label": "Product SEALBOX",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "SEALBOX"
+        }
+      ],
+      "metric": "count",
+      "expected": 3,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC186",
+      "group": "product",
+      "label": "Product VIC186",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC186"
+        }
+      ],
+      "metric": "count",
+      "expected": 3,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_SCR400",
+      "group": "product",
+      "label": "Product SCR400",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "SCR400"
+        }
+      ],
+      "metric": "count",
+      "expected": 2,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC405 1.2.1 (LEGACY)",
+      "group": "product",
+      "label": "Product VIC405 1.2.1 (LEGACY)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC405 1.2.1 (LEGACY)"
+        }
+      ],
+      "metric": "count",
+      "expected": 2,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Wise.Art/NFT",
+      "group": "product",
+      "label": "Product Wise.Art/NFT",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Wise.Art/NFT"
+        }
+      ],
+      "metric": "count",
+      "expected": 2,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Act2L v1.3 (CISCO)",
+      "group": "product",
+      "label": "Product Act2L v1.3 (CISCO)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Act2L v1.3 (CISCO)"
+        }
+      ],
+      "metric": "count",
+      "expected": 1,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_OCI",
+      "group": "product",
+      "label": "Product OCI",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "OCI"
+        }
+      ],
+      "metric": "count",
+      "expected": 1,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Quack2 (CISCO)",
+      "group": "product",
+      "label": "Product Quack2 (CISCO)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Quack2 (CISCO)"
+        }
+      ],
+      "metric": "count",
+      "expected": 1,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_Quack2 HT (CISCO)",
+      "group": "product",
+      "label": "Product Quack2 HT (CISCO)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "Quack2 HT (CISCO)"
+        }
+      ],
+      "metric": "count",
+      "expected": 1,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "product_VIC100",
+      "group": "product",
+      "label": "Product VIC100",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "prod___product_name_new_",
+          "op": "EQ",
+          "value": "VIC100"
+        }
+      ],
+      "metric": "count",
+      "expected": 1,
+      "tolerance_abs": 5,
+      "tolerance_pct": 1.0,
+      "source": "hubspot_crm_schema.product_distribution_live",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_product_hierarchy",
+      "group": "utilisation",
+      "label": "product_hierarchy filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "product_hierarchy",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 930,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_product_line",
+      "group": "utilisation",
+      "label": "product_line filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "product_line",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 933,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_tpm_qvault___qs7001___ip__",
+      "group": "utilisation",
+      "label": "tpm_qvault___qs7001___ip__ filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "tpm_qvault___qs7001___ip__",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 333,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_pqc_required",
+      "group": "utilisation",
+      "label": "pqc_required filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "pqc_required",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 173,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_fips_required",
+      "group": "utilisation",
+      "label": "fips_required filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "fips_required",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 173,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_military_application",
+      "group": "utilisation",
+      "label": "military_application filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "military_application",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 227,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_vaultitrust_",
+      "group": "utilisation",
+      "label": "vaultitrust_ filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "vaultitrust_",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 596,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_sales_region",
+      "group": "utilisation",
+      "label": "sales_region filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "sales_region",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 1027,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_opp_cust___channel_var__new_",
+      "group": "utilisation",
+      "label": "opp_cust___channel_var__new_ filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "opp_cust___channel_var__new_",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 743,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_channel_name__dist_rep_",
+      "group": "utilisation",
+      "label": "channel_name__dist_rep_ filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "channel_name__dist_rep_",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 217,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_final_customer",
+      "group": "utilisation",
+      "label": "final_customer filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "final_customer",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 931,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_revenue_state",
+      "group": "utilisation",
+      "label": "revenue_state filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "revenue_state",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 681,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_hs_manual_forecast_category",
+      "group": "utilisation",
+      "label": "hs_manual_forecast_category filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "hs_manual_forecast_category",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 0,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_forecast_source",
+      "group": "utilisation",
+      "label": "forecast_source filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "forecast_source",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 54,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_quote_status",
+      "group": "utilisation",
+      "label": "quote_status filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "quote_status",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 38,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_stratification_of_lost_deals",
+      "group": "utilisation",
+      "label": "stratification_of_lost_deals filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "stratification_of_lost_deals",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 333,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_previous_deal_status",
+      "group": "utilisation",
+      "label": "previous_deal_status filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "previous_deal_status",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 555,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_hs_priority",
+      "group": "utilisation",
+      "label": "hs_priority filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "hs_priority",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 44,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_wisekey___seal",
+      "group": "utilisation",
+      "label": "wisekey___seal filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "wisekey___seal",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 1820,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_icalps__sealsq",
+      "group": "utilisation",
+      "label": "icalps__sealsq filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "icalps__sealsq",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 0,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_icalps_dealstatus",
+      "group": "utilisation",
+      "label": "icalps_dealstatus filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "icalps_dealstatus",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 787,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_icalps_stage",
+      "group": "utilisation",
+      "label": "icalps_stage filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "icalps_stage",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 786,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_deal_currency_code",
+      "group": "utilisation",
+      "label": "deal_currency_code filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "deal_currency_code",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 1820,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_new_design_win__",
+      "group": "utilisation",
+      "label": "new_design_win__ filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "new_design_win__",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 0,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_new_design_in__",
+      "group": "utilisation",
+      "label": "new_design_in__ filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "new_design_in__",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 0,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    },
+    {
+      "id": "fill_design_win_date",
+      "group": "utilisation",
+      "label": "design_win_date filled (scope)",
+      "object": "deals",
+      "filters": [
+        {
+          "prop": "pipeline",
+          "op": "IN",
+          "value": "12096408|13772279|766126206|705868909"
+        },
+        {
+          "prop": "design_win_date",
+          "op": "HAS_PROPERTY",
+          "value": ""
+        }
+      ],
+      "metric": "count",
+      "expected": 84,
+      "tolerance_abs": 10,
+      "tolerance_pct": 1.0,
+      "source": "sealsq_property_set.utilisation_detail",
+      "captured": "2026-09-14"
+    }
+  ]
+}

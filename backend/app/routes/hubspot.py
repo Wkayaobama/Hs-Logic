@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from app.cache import health_cache
 from app.config import settings
+from app.hubspot.client import get_client
 
 router = APIRouter(prefix="/api/hubspot", tags=["hubspot"])
 
@@ -31,33 +32,13 @@ def hs_headers() -> dict:
 
 
 async def hs_get(path: str, params: dict | None = None) -> dict:
-    """Make a GET request to the HubSpot API and return JSON."""
-    url = f"{HUBSPOT_BASE}{path}"
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        resp = await client.get(url, headers=hs_headers(), params=params or {})
-    if resp.status_code == 401:
-        raise HTTPException(status_code=401, detail="HubSpot token is invalid or expired.")
-    if resp.status_code == 403:
-        raise HTTPException(status_code=403, detail="HubSpot token lacks required scopes.")
-    if not resp.is_success:
-        detail = resp.json().get("message", resp.text) if resp.content else resp.reason_phrase
-        raise HTTPException(status_code=resp.status_code, detail=f"HubSpot error: {detail}")
-    return resp.json()
+    """GET on the HubSpot API through the shared client (backoff, one connection pool)."""
+    return await get_client().get(path, params or {})
 
 
 async def hs_post(path: str, body: dict) -> dict:
-    """Make a POST request to the HubSpot API and return JSON."""
-    url = f"{HUBSPOT_BASE}{path}"
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        resp = await client.post(url, headers=hs_headers(), json=body)
-    if resp.status_code == 401:
-        raise HTTPException(status_code=401, detail="HubSpot token is invalid or expired.")
-    if resp.status_code == 403:
-        raise HTTPException(status_code=403, detail="HubSpot token lacks required scopes.")
-    if not resp.is_success:
-        detail = resp.json().get("message", resp.text) if resp.content else resp.reason_phrase
-        raise HTTPException(status_code=resp.status_code, detail=f"HubSpot error: {detail}")
-    return resp.json()
+    """POST on the HubSpot API through the shared client (backoff, one connection pool)."""
+    return await get_client().post(path, body)
 
 
 # ─── Portal / Account ───────────────────────────────────────────────────────

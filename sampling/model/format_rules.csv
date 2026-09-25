@@ -1,0 +1,66 @@
+object,property,rule_type,spec,source
+deals,dealtype,enum,newbusiness|existingbusiness|existingbusinessre,hubspot_crm_schema.objects.DEAL.enum_values
+deals,icalps__sealsq,enum,SEALSQ|IC'Alps,hubspot_crm_schema.objects.DEAL.enum_values
+deals,opp_cust___channel_var__new_,enum,Distributor|Direct|Channel|Rep|Web,hubspot_crm_schema.objects.DEAL.enum_values
+deals,sales_region,enum,EMEA|APAC|NORAM|TAIWAN,hubspot_crm_schema.objects.DEAL.enum_values
+deals,wisekey___seal,enum,Seal|Wisekey,hubspot_crm_schema.objects.DEAL.enum_values
+deals,deal_currency_code,enum,USD|EUR,hubspot_crm_schema.objects.DEAL.enum_values
+deals,forecast_source,enum,Salesman estimate|Customer Conversation|Customer Forecast|Salesman update,hubspot_crm_schema.objects.DEAL.enum_values
+deals,hs_manual_forecast_category,enum,OMIT|COMMIT|CLOSED,hubspot_crm_schema.objects.DEAL.enum_values
+deals,invoice_currency,enum,EUR|USD,hubspot_crm_schema.objects.DEAL.enum_values
+deals,revenue_state,enum,Pipeline|Forecast|BIBA,hubspot_crm_schema.objects.DEAL.enum_values
+deals,hs_all_collaborator_owner_ids,enum,29462792|62919224|62919259|63386667|64863027|64863028|66906000|70108363|76175881|78819009|79353440|80219899|82045380|82939931|84834752|85917018|86947944|87605300|88741005|88741191|88795766|89283664|91468608|92081232|92090369|92518776|92989799|93058175|93252694|93702497|95100948|95922386|96319970|97351604|97423250|98790758|98791059|106420117|115790186|157028373|208893079|250770466|295869563|328317052|354221939|372974154|975855252,hubspot_crm_schema.objects.DEAL.enum_values
+deals,dealstage,enum,12096409|12096410|12096411|12096412|12096869|12096415|13772274|13772280|13772281|13772282|31868514|13772285|13772286|13772309|85103752|85103753|85103754|85103755|85103756|85103757|85103758|1311252059|1311252060|1311252061|1311252062|1311252063|1311252064|1311252065|1031449001|1031449002|1031449003|1031449004|1031449005|1031449006|1116419644|1116419645|1116419646|1116419647|1116419649|1116419650|1116652341|1313738265|1437101470|1437101471|1437101472|1437101473|1437101474|1437101475|1437101476,hubspot_crm_schema.objects.DEAL.enum_values
+deals,hs_is_closed,enum,true|false,hubspot_crm_schema.objects.DEAL.enum_values
+deals,hs_is_closed_lost,enum,true|false,hubspot_crm_schema.objects.DEAL.enum_values
+deals,hs_is_closed_won,enum,true|false,hubspot_crm_schema.objects.DEAL.enum_values
+deals,hs_is_stalled,enum,true|false,hubspot_crm_schema.objects.DEAL.enum_values
+deals,icalps_dealstatus,enum,Abandonnée|In Progress|Lost|NoGo|Won,hubspot_crm_schema.objects.DEAL.enum_values
+deals,icalps_stage,enum,01 - Identification|02 - Qualifiée|03 - Evaluation technique|04 - Construction propositions|05 - Négociations,hubspot_crm_schema.objects.DEAL.enum_values
+deals,pipeline,enum,12096408|13772279|40296576|875072356|705868909|766126206|934982230,hubspot_crm_schema.objects.DEAL.enum_values
+deals,previous_deal_status,enum,N/A|Identified|Qualified|Design In|Closed Won|Closed Lost,hubspot_crm_schema.objects.DEAL.enum_values
+deals,prod___product_name_new_,enum,INES|SEALBOX|SCR400|SCR200|SCR075|VIC420|VIC408|QVault 409|VIC405 1.2.5|VIC405 1.0.1 (LEGACY)|VIC405 1.2.1 (LEGACY)|VIC405 1.2.6 (CUSTOM - BK Tech)|VIC292|VIC186|VIC183|VIC100|VIC155|Nanoseal|QS7001|QVault TPM IOT|QVault TPM|MS6003|MS6001|104104CV|4040CV|SO128|SO64|SO36|Quack2 (CISCO)|Quack2 HT (CISCO)|Act2L v1.3 (CISCO)|Act2L v1.5 (CISCO)|Wise.Sat|SEALCOIN|Wise.Art/NFT|PKI|PKI/GSMA|PKI/Other|Undefined|NRE|Legacy|OCI|N/A,hubspot_crm_schema.objects.DEAL.enum_values
+deals,product_hierarchy,enum,SCR|600x|VIC|ASIC|Legacy|PKI|TPM|CISCO,hubspot_crm_schema.objects.DEAL.enum_values
+deals,product_line,enum,ASIC|Quantum Shield|PKI|TPM|Legacy,hubspot_crm_schema.objects.DEAL.enum_values
+deals,service_name,enum,PKI Service|Digital Signature|WiseID|SSL Certificates|Custom/MPKI/TLS (WK)|FTK|Pre-Study|Satellite Service (Wise.Sat)|NRE (SEALSQ)|PKI (SEALSQ)|Quantum (SEALSQ),hubspot_crm_schema.objects.DEAL.enum_values
+deals,tpm_qvault___qs7001___ip__,enum,Yes|No,hubspot_crm_schema.objects.DEAL.enum_values
+deals,distributor_update__,enum,true|false,hubspot_crm_schema.objects.DEAL.enum_values
+deals,fips_required,enum,No|Yes|Unknown,hubspot_crm_schema.objects.DEAL.enum_values
+deals,hs_priority,enum,low|medium|high,hubspot_crm_schema.objects.DEAL.enum_values
+deals,military_application,enum,Yes|No,hubspot_crm_schema.objects.DEAL.enum_values
+deals,new_design_in__,enum,YES|NO,hubspot_crm_schema.objects.DEAL.enum_values
+deals,new_design_win__,enum,YES|NO,hubspot_crm_schema.objects.DEAL.enum_values
+deals,new_lead__,enum,YES|NO,hubspot_crm_schema.objects.DEAL.enum_values
+deals,pqc_required,enum,YES|NO|Unknown,hubspot_crm_schema.objects.DEAL.enum_values
+deals,quote_status,enum,Create|Completed,hubspot_crm_schema.objects.DEAL.enum_values
+deals,vaultitrust_,enum,true|false,hubspot_crm_schema.objects.DEAL.enum_values
+deals,stratification_of_lost_deals,enum,Competition|No Activity|Product Issue|End of Life/Stale Project|Other|Unknown,hubspot_crm_schema.objects.DEAL.enum_values
+deals,solution_family__new_,enum,WISeAuthentic|WISeBattery|WISePrint|WISe.Art|WISeID|HIRO,hubspot_crm_schema.objects.DEAL.enum_values
+companies,icalps_companytype,enum,Prospect|Supplier|Customer|Agent,hubspot_crm_schema.objects.COMPANY.enum_values
+companies,icalps_companystatus,enum,Active|Inactive|Closed|Archive,hubspot_crm_schema.objects.COMPANY.enum_values
+companies,icalps_compsource,enum,Phone|Web|Prospection|Salon|Prospection LinkedIn|Prospection Medicen|EW|Prospection Medicalp|Prospection startup ETHZ|Prospection VC|ProspectionMedicalps|Electronica22|Electronica 24|EW23,hubspot_crm_schema.objects.COMPANY.enum_values
+companies,icalps_comp_language,enum,FR|INTER,hubspot_crm_schema.objects.COMPANY.enum_values
+companies,icalps_comp_numemployees,enum,Upto20|20|21-50|51-100|101-200|201-500|501+,hubspot_crm_schema.objects.COMPANY.enum_values
+companies,icalps_industry_drill_down,enum,Aeronautique|Agent|Autre|Consumer|Government|Industriel|IoT|Medical|Militaire|Recherche|Semiconducteur|Spacial|Telecom|Transportation|Universite,hubspot_crm_schema.objects.COMPANY.enum_values
+contacts,icalps_contactstatus,enum,true|false|active|inactive,hubspot_crm_schema.objects.CONTACT.enum_values
+contacts,hs_marketable_status,enum,true|false,hubspot_crm_schema.objects.CONTACT.enum_values
+contacts,email_valid,enum,true|false,hubspot_crm_schema.objects.CONTACT.enum_values
+contacts,hs_language,enum,en|fr|de|...,hubspot_crm_schema.objects.CONTACT.enum_values
+tickets,hs_pipeline,enum,0|820219545,hubspot_crm_schema.objects.TICKET.enum_values
+tickets,hs_pipeline_stage,enum,1|2|3|4|1211682155|1211682156|1211682157|1211682158,hubspot_crm_schema.objects.TICKET.enum_values
+tickets,hs_ticket_priority,enum,LOW|MEDIUM|HIGH|URGENT,hubspot_crm_schema.objects.TICKET.enum_values
+contacts,email,regex,^[^@\s]+@[^@\s]+\.[^@\s]+$,generic
+companies,domain,regex,"^(?!https?://)(?!www\.)[a-z0-9.-]+\.[a-z]{2,}$",generic
+deals,amount,type,number,generic
+deals,amount_in_home_currency,type,number,generic
+deals,closedate,type,datetime,generic
+deals,createdate,type,datetime,generic
+deals,hs_lastmodifieddate,type,datetime,generic
+contacts,createdate,type,datetime,generic
+contacts,lastmodifieddate,type,datetime,generic
+companies,createdate,type,datetime,generic
+companies,hs_lastmodifieddate,type,datetime,generic
+tickets,createdate,type,datetime,generic
+deals,hs_is_closed,type,bool,generic
+deals,hs_is_closed_won,type,bool,generic
+tickets,is_icalps,type,bool,generic
