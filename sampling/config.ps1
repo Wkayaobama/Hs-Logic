@@ -84,11 +84,21 @@ function Write-JsonFile {
     $Object | ConvertTo-Json -Depth $Depth | Set-Content -Path $Path -Encoding UTF8
 }
 
+$script:JsonDateKindSupported = $null -ne (Get-Command ConvertFrom-Json).Parameters['DateKind']
+
+function ConvertFrom-JsonText {
+    <# ConvertFrom-Json that leaves ISO timestamps as strings (PowerShell 7.5+ -DateKind String; older versions parse them) #>
+    param([Parameter(Mandatory)][AllowEmptyString()][string]$Text, [switch]$AsHashtable, [int]$Depth = 64)
+    $args = @{ Depth = $Depth }
+    if ($AsHashtable) { $args.AsHashtable = $true }
+    if ($script:JsonDateKindSupported) { $args.DateKind = 'String' }
+    return ($Text | ConvertFrom-Json @args)
+}
+
 function Read-JsonFile {
     param([Parameter(Mandatory)][string]$Path, [switch]$AsHashtable)
     $raw = Get-Content -Raw -Path $Path -Encoding UTF8
-    if ($AsHashtable) { return ($raw | ConvertFrom-Json -AsHashtable -Depth 64) }
-    return ($raw | ConvertFrom-Json -Depth 64)
+    return (ConvertFrom-JsonText -Text $raw -AsHashtable:$AsHashtable)
 }
 
 function Get-RowValue {

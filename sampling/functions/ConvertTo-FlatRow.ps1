@@ -2,6 +2,7 @@ function Get-NormalizedPropertyValue {
     param($Value)
     if ($null -eq $Value) { return '' }
     if ($Value -is [bool]) { return $Value.ToString().ToLowerInvariant() }
+    if ($Value -is [datetime]) { return $Value.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ') }   # older PowerShell parses ISO dates
     return [string]$Value
 }
 
@@ -83,7 +84,7 @@ function Read-JsonLines {
     try {
         while ($null -ne ($line = $reader.ReadLine())) {
             if ([string]::IsNullOrWhiteSpace($line)) { continue }
-            $records.Add(($line | ConvertFrom-Json -AsHashtable -Depth 64))
+            $records.Add((ConvertFrom-JsonText -Text $line -AsHashtable))
         }
     } finally { $reader.Dispose() }
     return ,$records

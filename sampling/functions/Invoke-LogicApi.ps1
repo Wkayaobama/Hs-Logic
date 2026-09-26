@@ -39,10 +39,14 @@ function Invoke-LogicApi {
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $hdr = $null; $code = 0; $resp = $null; $failure = $null
         try {
-            $args = @{ Method = $Method; Uri = $uri; TimeoutSec = $TimeoutSec; SkipHttpErrorCheck = $true
-                       ResponseHeadersVariable = 'hdr'; StatusCodeVariable = 'code' }
+            $args = @{ Method = $Method; Uri = $uri; TimeoutSec = $TimeoutSec; SkipHttpErrorCheck = $true }
             if ($null -ne $Body) { $args.Body = ($Body | ConvertTo-Json -Depth 20); $args.ContentType = 'application/json' }
-            $resp = Invoke-RestMethod @args
+            $raw = Invoke-WebRequest @args
+            $hdr = $raw.Headers
+            $code = [int]$raw.StatusCode
+            $text = [string]$raw.Content
+            # keep ISO timestamps as strings (PowerShell would otherwise turn them into culture-formatted DateTime)
+            $resp = if ($text) { ConvertFrom-JsonText $text } else { $null }
         } catch {
             $failure = $_.Exception.Message
         }

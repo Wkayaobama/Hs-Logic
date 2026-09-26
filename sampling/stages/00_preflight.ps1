@@ -88,7 +88,7 @@ foreach ($q in $Queries.Preflight) {
             Add-Check $name ($mode -eq 'no_marker') "no rows (scope_mode=$mode)"
             continue
         }
-        $rec  = $results[0] | ConvertTo-Json -Depth 20 | ConvertFrom-Json -AsHashtable -Depth 20
+        $rec  = ConvertFrom-JsonText -Text ($results[0] | ConvertTo-Json -Depth 20) -AsHashtable
         $cols = Get-FlatColumns @($rec)
         $row  = ConvertTo-FlatRow -Record $rec -Columns $cols
         $row | Export-Csv -Path (Join-Path $outDir "$name.csv") -NoTypeInformation -Encoding UTF8
