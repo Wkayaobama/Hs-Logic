@@ -2,8 +2,18 @@
 
 import os
 
+import tempfile
+from pathlib import Path
+
 os.environ.setdefault("HUBSPOT_TOKEN", "test-token")
 os.environ.setdefault("HUBSPOT_PORTAL_ID", "9201667")
+# Ad-hoc sources write into the context repo and the sampling dir: point both at scratch space for tests.
+_SCRATCH = Path(tempfile.mkdtemp(prefix="hslogic-tests-"))
+(_SCRATCH / "ruler" / "entities").mkdir(parents=True)
+(_SCRATCH / "sampling").mkdir()
+os.environ["RULER_DIR"] = str(_SCRATCH / "ruler")
+os.environ["SAMPLING_DIR"] = str(_SCRATCH / "sampling")
+os.environ["SOURCES_EXTRA_DIRS"] = str(Path(__file__).resolve().parent / "fixtures")
 
 import httpx  # noqa: E402
 import pytest  # noqa: E402

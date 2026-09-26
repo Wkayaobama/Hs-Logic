@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +26,25 @@ class Settings(BaseSettings):
     export_page_limit: int = 100
     # Empty -> app/data/entities.yaml
     entities_path: str = ""
+    # Ad-hoc sources: the context repo (entity packages live under <ruler_dir>/entities/<ENTITY>/sources),
+    # the sampling probe directory, extra allowed roots (colon-separated) and the record-index cap
+    ruler_dir: str = ""
+    sampling_dir: str = ""
+    sources_extra_dirs: str = "/root/.claude/uploads"
+    record_index_max: int = 60000
 
 
 settings = Settings()
+
+
+def get_ruler_dir() -> Path:
+    """HubSpot-Ruler checkout (context layer); defaults to the sibling of this repo."""
+    if settings.ruler_dir:
+        return Path(settings.ruler_dir)
+    return Path(__file__).resolve().parents[2].parent / "HubSpot-Ruler"
+
+
+def get_sampling_dir() -> Path:
+    if settings.sampling_dir:
+        return Path(settings.sampling_dir)
+    return Path(__file__).resolve().parents[2] / "sampling"

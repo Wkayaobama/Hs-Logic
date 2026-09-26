@@ -15,6 +15,8 @@ param(
     [string]   $Target = 'Backend',
     [string[]] $BusinessEntities = @(),
     [string[]] $Entities = @('contacts', 'companies', 'deals', 'tickets', 'notes'),
+    [string[]] $FileEntities = @(),
+    [switch]   $IngestFake,
     [int]      $SampleSize = 0,
     [switch]   $Force,
     [switch]   $WhatIf,
@@ -31,6 +33,7 @@ Get-ChildItem (Join-Path $PSScriptRoot 'functions' '*.ps1') |
 
 $Entities = @(Expand-List $Entities)
 $BusinessEntities = @(Expand-List $BusinessEntities)
+$FileEntities = @((Expand-List $FileEntities) | ForEach-Object { $_.ToUpperInvariant() })
 
 if ([string]::IsNullOrWhiteSpace($RunId)) {
     $RunId = if ($env:PIPELINE_RUN_ID) { $env:PIPELINE_RUN_ID } else { Get-Date -Format 'yyyyMMdd-HHmmss' }
@@ -66,10 +69,15 @@ try {
         $BusinessEntities = if ($WhatIf) { @('SEALSQ', 'ICALPS', 'MIRAEX', 'WECAN', 'WISEKEY') } else { Get-BusinessEntityIds -Server $Server }
     }
     $BusinessEntities = @($BusinessEntities | ForEach-Object { $_.ToUpperInvariant() })
+    foreach ($fe in $FileEntities) { if ($fe -notin $BusinessEntities) { $BusinessEntities += $fe } }
     Write-Host "Business entities: $($BusinessEntities -join ', ')"
 
     foreach ($be in $BusinessEntities) {
-        Invoke-Stage '01_extract'            @{ RunId = $RunId; Entities = $Entities; Server = $Server; BusinessEntity = $be; SampleSize = $SampleSize; Force = $Force; WhatIf = $WhatIf }
+        if ($be -in $FileEntities) {
+            Invoke-Stage '01_import'         @{ RunId = $RunId; Entities = $Entities; Server = $Server; BusinessEntity = $be; SampleSize = $SampleSize; IngestFake = $IngestFake; Force = $Force; WhatIf = $WhatIf }
+        } else {
+            Invoke-Stage '01_extract'        @{ RunId = $RunId; Entities = $Entities; Server = $Server; BusinessEntity = $be; SampleSize = $SampleSize; Force = $Force; WhatIf = $WhatIf }
+        }
         Invoke-Stage '02_flatten'            @{ RunId = $RunId; Entities = $Entities; BusinessEntity = $be; Force = $Force; WhatIf = $WhatIf }
         Invoke-Stage '03_profile'            @{ RunId = $RunId; Entities = $Entities; BusinessEntity = $be; Force = $Force; WhatIf = $WhatIf }
         Invoke-Stage '04_cascade_validation' @{ RunId = $RunId; Entities = $Entities; BusinessEntity = $be; Force = $Force; WhatIf = $WhatIf }

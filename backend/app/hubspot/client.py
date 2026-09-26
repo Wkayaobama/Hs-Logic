@@ -133,6 +133,15 @@ class HubSpotClient:
         self._client: httpx.AsyncClient | None = None
         self._search_limiter = RateLimiter(search_rps)
 
+    @property
+    def base_url(self) -> str:
+        return self._base_url
+
+    @property
+    def is_fake(self) -> bool:
+        """True unless the client points at the real HubSpot API (guards fake-only endpoints)."""
+        return not self._base_url.startswith("https://api.hubapi.com")
+
     # ── plumbing ──────────────────────────────────────────────────────────
 
     def _ensure(self) -> httpx.AsyncClient:

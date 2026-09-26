@@ -17,13 +17,22 @@ function Test-Gate {
     # executability
     $perEntityStages = @('01_extract', '02_flatten', '03_profile', '04_cascade_validation', '05_fuzzy', '06_delta')
     $missing = @()
+    $surfaces = @()
     foreach ($be in $BusinessEntities) {
-        foreach ($s in $perEntityStages) { if (-not (Test-Path (Get-SentinelPath -StageTag $s -RunId $RunId -Entity $be))) { $missing += "$s/$be" } }
+        foreach ($s in $perEntityStages) {
+            $ok = Test-Path (Get-SentinelPath -StageTag $s -RunId $RunId -Entity $be)
+            if ($s -eq '01_extract' -and -not $ok) { $ok = Test-Path (Get-SentinelPath -StageTag '01_import' -RunId $RunId -Entity $be) }
+            if (-not $ok) { $missing += "$s/$be" }
+        }
+        $m = Join-Path (Get-StagePath -Kind 'extract' -Entity $be -RunId $RunId) 'manifest.json'
+        $src = 'portal'
+        if (Test-Path $m) { $v = Get-RowValue (Read-JsonFile -Path $m) 'source'; if ($v) { $src = [string]$v } }
+        $surfaces += "$be=$src"
     }
     foreach ($s in @('00_preflight', '07_accuracy_efficiency', '08_review_package')) {
         if (-not (Test-Path (Get-SentinelPath -StageTag $s -RunId $RunId))) { $missing += $s }
     }
-    Add-Criterion 'executability' 'every stage completed and left a sentinel' ($missing.Count -eq 0) $(if ($missing.Count) { "missing: $($missing -join ', ')" } else { "$($BusinessEntities.Count) entities x $($perEntityStages.Count) stages + 3 run-level stages" })
+    Add-Criterion 'executability' 'every stage completed and left a sentinel' ($missing.Count -eq 0) $(if ($missing.Count) { "missing: $($missing -join ', ')" } else { "$($BusinessEntities.Count) entities x $($perEntityStages.Count) stages + 3 run-level stages; surfaces: $($surfaces -join ', ')" })
 
     $cappedEntities = @()
     $noMarker = @()

@@ -24,12 +24,34 @@ Portal explorer and CRM health analytics for HubSpot portal 9201667. Standalone 
 | `/api/export/associations` | GET | v4 batch association read with labels | `from`, `to`, `ids` |
 | `/api/meta/entities` | GET | The business-entity seed (`backend/app/data/entities.yaml`) and export defaults | — |
 | `/api/meta/properties/{object}` | GET | Property definitions (type, fieldType, groupName, hubspotDefined, options) | — |
+| `/api/sources/profile` | POST | Sniff and profile an external CSV (delimiter, title rows, per-column type, fill, uniqueness, Excel-mangled numbers) | body `file`, `header_row`, `delimiter` |
+| `/api/sources/match` | POST | Match the file's columns to the CRM's property metadata with an evidence trail, detect keys and derived objects, propose entity-namespaced properties; `save` writes the spec and `schema.proposed.json` into HubSpot-Ruler | body `entity`, `object`, `file`, `name`, `source_system`, `save` |
+| `/api/sources/specs` | GET | Source specs found under `HubSpot-Ruler/entities/<ENTITY>/sources/` | `entity` |
+| `/api/sources/load` | POST | Apply a spec: rows to export-contract JSONL (main + derived objects, associations), rows matched to existing CRM records, `import_plan.json` (batch payloads, never written to production), optional ingest into the fake CRM | body `spec` or `spec_inline`, `run_id`, `match_records`, `ingest_fake`, `limit` |
 
 Every response of the export/meta routes carries `X-Logic-Request-Id`, `X-Logic-Duration-Ms`, `X-Logic-HS-Requests`, `X-Logic-HS-429` and `X-Logic-HS-Retries` headers so the sampling probe can measure the execution layer.
 
 ## Business entities
 
 `backend/app/data/entities.yaml` states once how each business entity sharing the portal (WISEKEY, WISESAT, SEALSQ, SEALCOIN, QUANTUM_AI, ICALPS, MIRAEX, WECAN) is recognised on every object: deal pipelines, ticket/contact/company marker properties, or the complement (WISEKEY). `app/entities.py` turns it into HubSpot search `filterGroups` (server-side) or a client-side predicate; objects without a marker are exported as an empty page flagged `no_marker`.
+
+## Ad-hoc sources (extraneous data)
+
+An entity that is not in the portal yet is described by an **entity package** in the context repo,
+`HubSpot-Ruler/entities/<ENTITY>/`: the raw file under `sources/`, the reviewed `*.source.json`
+mapping the backend generated, and `schema.proposed.json` (the properties to create, including the
+system properties `<entity>_source_key`, `<entity>_source_system` and `entity_scope`). The same
+CLI exists for scripting:
+
+```bash
+python -m app.sources.cli profile entities/WECAN/sources/wecan_contacts_export.csv
+python -m app.sources.cli match WECAN contacts entities/WECAN/sources/wecan_contacts_export.csv --source-system hubspot-export --save
+python -m app.sources.cli load entities/WECAN/sources/wecan_contacts_export.source.json --run-id file1 --ingest-fake
+```
+
+This module is the complement of the full loader in project mir-load (which attaches recovered
+records and notes in HubSpot): it lets the ruler context and the logic engine reason about an
+ad-hoc addition, on the fake CRM or as a plan, before anything is written to the portal.
 
 ## Sampling probe
 

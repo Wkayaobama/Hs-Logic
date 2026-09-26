@@ -57,6 +57,8 @@ function Get-ExtractRows {
     foreach ($dir in @(Get-ChildItem -Path $flattenRoot -Directory -ErrorAction SilentlyContinue)) {
         $csv = Join-Path $dir.FullName $RunId "$Object.csv"
         if (-not (Test-Path $csv)) { continue }
+        $em = Join-Path (Get-StagePath -Kind 'extract' -Entity $dir.Name -RunId $RunId) 'manifest.json'
+        if ((Test-Path $em) -and ([string](Get-RowValue (Read-JsonFile -Path $em) 'source') -eq 'file')) { continue }   # file surface: not a portal fact
         foreach ($row in @(Import-Csv -Path $csv -Encoding UTF8)) {
             if ($seen.Add([string](Get-RowValue $row 'id'))) { $rows.Add($row) }
         }
@@ -64,6 +66,17 @@ function Get-ExtractRows {
     $extractCache[$Object] = $rows
     return ,$rows
 }
+
+# the extract path answers portal-wide questions only when every portal entity was extracted in this run
+$portalEntities = @()
+foreach ($dir in @(Get-ChildItem -Path $flattenRoot -Directory -ErrorAction SilentlyContinue)) {
+    $em = Join-Path (Get-StagePath -Kind 'extract' -Entity $dir.Name -RunId $RunId) 'manifest.json'
+    if ((Test-Path $em) -and ([string](Get-RowValue (Read-JsonFile -Path $em) 'source') -ne 'file')) { $portalEntities += $dir.Name }
+}
+$allEntities = @(Get-BusinessEntityIds -Server $Server)
+$missingEntities = @($allEntities | Where-Object { $_ -notin $portalEntities })
+$extractComplete = ($missingEntities.Count -eq 0)
+if (-not $extractComplete) { Write-Host "[$stageTag] extract path skipped: portal entities not extracted in this run: $($missingEntities -join ', ')" }
 
 $results = [System.Collections.Generic.List[object]]::new()
 foreach ($ref in $references) {
@@ -77,7 +90,8 @@ foreach ($ref in $references) {
             $backend = [int](Get-RowValue $r.Body 'total')
         } catch { $errors += "backend: $($_.Exception.Message)" }
     }
-    $rows = Get-ExtractRows -Object $object
+    $rows = @()
+    if ($extractComplete) { $rows = Get-ExtractRows -Object $object } else { $errors += "extract: skipped, partial run (missing $($missingEntities -join ', '))" }
     if ($rows.Count -gt 0) {
         $columns = @($rows[0].PSObject.Properties | ForEach-Object { $_.Name })
         $missingProps = @($filters | ForEach-Object { [string](Get-RowValue $_ 'prop') } | Where-Object { $_ -and $_ -notin $columns })
@@ -149,7 +163,7 @@ $totals = [ordered]@{
 }
 $accuracy = [ordered]@{
     run_id = $RunId; server = $Server; target = $Target; at = (Get-UtcNow)
-    summary = [ordered]@{ references = $results.Count; passed = ($results.Count - $failed.Count); failed = $failed.Count; drifted = @($results | Where-Object { -not $_.within_tolerance }).Count; paths_disagree = @($results | Where-Object { -not $_.paths_agree }).Count }
+    summary = [ordered]@{ references = $results.Count; passed = ($results.Count - $failed.Count); failed = $failed.Count; drifted = @($results | Where-Object { -not $_.within_tolerance }).Count; paths_disagree = @($results | Where-Object { -not $_.paths_agree }).Count; extract_path = $(if ($extractComplete) { 'complete' } else { "skipped (missing $($missingEntities -join ', '))" }); portal_entities = @($portalEntities) }
     results = @($results)
 }
 $efficiency = [ordered]@{

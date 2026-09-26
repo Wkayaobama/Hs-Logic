@@ -705,6 +705,46 @@ def create_app(fake: FakeHubSpot) -> FastAPI:
     async def counts():
         return {"counts": fake.counts(), "requests": fake.requests}
 
+    @api.post("/_fake/ingest")
+    async def ingest(request: Request):
+        """Add or replace records (export-contract shape) and register property definitions: the ad-hoc
+        source loader uses this so planned entities can be probed through the same backend paths."""
+        body = await request.json()
+        key = _object(body.get("object", ""))
+        for d in body.get("properties_def") or []:
+            existing = {p["name"] for p in fake.properties.setdefault(key, [])}
+            if d.get("name") and d["name"] not in existing:
+                fake.properties[key].append({"name": d["name"], "label": d.get("label", d["name"]), "type": d.get("type", "string"),
+                                             "fieldType": d.get("fieldType", "text"), "groupName": d.get("groupName", "information"),
+                                             "hubspotDefined": False, "calculated": False, "hidden": False,
+                                             "options": [{"value": o.get("value"), "label": o.get("label"), "hidden": False, "displayOrder": i} for i, o in enumerate(d.get("options") or [])]})
+        added = replaced = 0
+        now = datetime.now(timezone.utc)
+        for rec in body.get("records") or []:
+            rid = str(rec.get("id") or "")
+            if not rid:
+                rid = str(max((int(r) for r in fake.data.index.get(key, {}) if r.isdigit()), default=10_000_000) + 1)
+            props = {k: v for k, v in (rec.get("properties") or {}).items() if v is not None}
+            created = rec.get("created_at") or _iso(now)
+            updated = rec.get("updated_at") or _iso(now)
+            new = {"id": rid, "properties": {**props, "hs_object_id": rid, "createdate": created, LASTMOD.get(key, "hs_lastmodifieddate"): updated},
+                   "createdAt": created, "updatedAt": updated, "archived": False}
+            if rid in fake.data.index.get(key, {}):
+                old = fake.data.index[key][rid]
+                old.update(new)
+                replaced += 1
+            else:
+                fake.data.add(key, new)
+                added += 1
+            for to_type, links in (rec.get("associations") or {}).items():
+                tkey = _object(to_type)
+                for link in links:
+                    type_id = link.get("typeId")
+                    if type_id is None or (key, tkey, int(type_id)) not in ASSOC_TYPES:
+                        continue
+                    fake.data.link(key, rid, tkey, str(link["id"]), int(type_id))
+        return {"object": key, "added": added, "replaced": replaced, "total": len(fake.data.records.get(key, []))}
+
     return api
 
 

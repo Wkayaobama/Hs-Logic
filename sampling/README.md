@@ -36,6 +36,19 @@ pwsh sampling/run.ps1 -RunId live1 -Target Both                  # adds the dire
 
 Stages can also run one at a time, e.g. `pwsh sampling/stages/01_extract.ps1 -RunId probe1 -BusinessEntity MIRAEX -Entities contacts`.
 
+### Extraneous data: the file surface
+
+An entity that is not in the portal yet, or only partly, is probed from its **ad-hoc sources**
+(`HubSpot-Ruler/entities/<ENTITY>/sources/`): a CSV plus a reviewed `*.source.json` spec produced
+by the backend's source module (`python -m app.sources.cli match <ENTITY> <object> <csv> --save`,
+or `POST /api/sources/match`). `-FileEntities MIRAEX,WECAN` makes `run.ps1` use `01_import`
+instead of `01_extract` for those entities: the backend matches rows against existing CRM records,
+derives secondary objects (companies inside a contact or deal export), writes the same
+`extract/<ENTITY>/<RunId>/*.jsonl` contract, an `import_plan.json` (batch payloads, no production
+writes) and a `load_report.json`; stages 02-08 run unchanged. `-IngestFake` also pushes the loaded
+records and the proposed properties into the fake CRM so the backend paths can be probed on them.
+Portal-wide accuracy questions ignore file-sourced entities. One spec per entity and object in V1.
+
 Parameter mapping from the original pipeline: `-Entities` = HubSpot object types
 (`contacts, companies, deals, tickets, notes`); `-BusinessEntity` (alias `-Database`) =
 `WISEKEY | WISESAT | SEALSQ | SEALCOIN | QUANTUM_AI | ICALPS | MIRAEX | WECAN` (the seed in

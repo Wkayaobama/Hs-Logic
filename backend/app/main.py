@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.config import settings
 from app.hubspot.client import close_client
-from app.routes import export, hubspot
+from app.routes import export, hubspot, sources
 
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app = FastAPI(
 
 app.include_router(hubspot.router)
 app.include_router(export.router)
+app.include_router(sources.router)
 
 
 @app.get("/api/health")
